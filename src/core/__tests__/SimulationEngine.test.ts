@@ -74,6 +74,9 @@ describe('SimulationEngine', () => {
     // Enqueue event2 at tick + 1 (should process before event1 despite enqueue order)
     engine.enqueueEvent(event2, 1);
 
+    engine.getDispatcher().registerHandler(SimulationEventType.PACKET_CREATED, () => {});
+    engine.getDispatcher().registerHandler(SimulationEventType.PACKET_DELIVERED, () => {});
+
     // Advance 1 tick
     engine.tick(1);
     expect(engine.getCurrentTick()).toBe(1);

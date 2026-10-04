@@ -2,6 +2,15 @@ import { type Device } from '../domain/Device';
 import { type Link } from '../domain/Link';
 import { type SimulationEvent } from '../events/SimulationEvent';
 import { EventQueue } from './EventQueue';
+import { EventDispatcher } from './EventDispatcher';
+
+export interface SimulationState {
+  devices: Device[];
+  links: Link[];
+  eventQueue: SimulationEvent[];
+  eventHistory: SimulationEvent[];
+  currentTick: number;
+}
 
 export class SimulationEngine {
   private devices: Map<string, Device> = new Map();
@@ -11,6 +20,11 @@ export class SimulationEngine {
   private eventHistory: SimulationEvent[] = [];
   
   private currentTick: number = 0;
+  private dispatcher: EventDispatcher = new EventDispatcher();
+
+  public getDispatcher(): EventDispatcher {
+    return this.dispatcher;
+  }
 
   /**
    * Adds a device to the simulation topology.
@@ -30,7 +44,6 @@ export class SimulationEngine {
       throw new Error(`Link with ID ${link.id} already exists`);
     }
 
-    // Verify endpoints exist
     let found1 = false;
     let found2 = false;
 
@@ -53,8 +66,6 @@ export class SimulationEngine {
 
   /**
    * Enqueues an event to be processed at a future tick.
-   * @param event The event to enqueue. Its timestamp will be modified.
-   * @param delayTicks The number of ticks from the current tick to schedule the event.
    */
   public enqueueEvent(event: SimulationEvent, delayTicks: number = 0): void {
     if (delayTicks < 0) {
@@ -67,7 +78,6 @@ export class SimulationEngine {
 
   /**
    * Advances the simulation by a given number of ticks, processing any scheduled events.
-   * @param steps The number of ticks to advance (default 1).
    */
   public tick(steps: number = 1): void {
     if (steps < 1) {
@@ -76,7 +86,6 @@ export class SimulationEngine {
 
     const targetTick = this.currentTick + steps;
 
-    // Process events chronologically up to the target tick
     while (this.currentTick < targetTick) {
       this.currentTick++;
       
@@ -88,13 +97,12 @@ export class SimulationEngine {
     }
   }
 
-  /**
-   * Processes a single event (currently a no-op handler) and adds it to history.
-   * Detailed packet logic will be implemented in future phases.
-   */
   private processEvent(event: SimulationEvent): void {
-    // Phase 3: No deep routing logic yet, just record it in history
+    // Record in history before processing so state reflects it
     this.eventHistory.push(event);
+    
+    // Dispatch to registered handlers
+    this.dispatcher.dispatch(event, this);
   }
 
   public getCurrentTick(): number {
@@ -109,7 +117,57 @@ export class SimulationEngine {
     return Array.from(this.devices.values());
   }
 
+  public getDevice(id: string): Device | undefined {
+    return this.devices.get(id);
+  }
+
   public getLinks(): Link[] {
     return Array.from(this.links.values());
+  }
+
+  public getLink(id: string): Link | undefined {
+    return this.links.get(id);
+  }
+
+  /**
+   * Deep clones the current state of the simulation.
+   */
+  public createSnapshot(): SimulationState {
+    return structuredClone({
+      devices: Array.from(this.devices.values()),
+      links: Array.from(this.links.values()),
+      eventQueue: this.eventQueue.getEvents(),
+      eventHistory: this.eventHistory,
+      currentTick: this.currentTick,
+    });
+  }
+
+  /**
+   * Restores the simulation to a specific snapshot state.
+   */
+  public restoreSnapshot(snapshot: SimulationState): void {
+    if (!snapshot || typeof snapshot.currentTick !== 'number') {
+      throw new Error('Invalid snapshot state provided');
+    }
+
+    const clonedSnapshot = structuredClone(snapshot);
+
+    this.devices.clear();
+    for (const dev of clonedSnapshot.devices) {
+      this.devices.set(dev.id, dev);
+    }
+
+    this.links.clear();
+    for (const link of clonedSnapshot.links) {
+      this.links.set(link.id, link);
+    }
+
+    this.eventQueue.clear();
+    for (const evt of clonedSnapshot.eventQueue) {
+      this.eventQueue.enqueue(evt);
+    }
+
+    this.eventHistory = clonedSnapshot.eventHistory;
+    this.currentTick = clonedSnapshot.currentTick;
   }
 }

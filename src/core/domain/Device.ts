@@ -14,6 +14,7 @@ export interface Device {
   type: DeviceType;
   interfaces: NetworkInterface[];
   isPoweredOn: boolean;
+  metadata?: Record<string, any>;
 }
 
 export interface Host extends Device {

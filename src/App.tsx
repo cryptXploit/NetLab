@@ -1,12 +1,19 @@
-
+import { useEffect } from 'react';
+import { useSimulationStore } from './app/store/useSimulationStore';
+import { TopologyView } from './ui/components/topology/TopologyView';
+import { SimulationControls } from './ui/components/controls/SimulationControls';
 
 function App() {
+  const initLab = useSimulationStore((state) => state.initLab);
+
+  useEffect(() => {
+    initLab();
+  }, [initLab]);
+
   return (
-    <div className="flex h-full w-full items-center justify-center bg-zinc-950 text-zinc-50">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">NETLAB</h1>
-        <p className="text-zinc-400">NETLAB Engineering Core</p>
-      </div>
+    <div className="relative h-screen w-screen overflow-hidden bg-zinc-950">
+      <TopologyView />
+      <SimulationControls />
     </div>
   );
 }

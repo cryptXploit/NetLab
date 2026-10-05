@@ -17,7 +17,9 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
   const updateDevicePosition = useSimulationStore((state) => state.updateDevicePosition);
   const pendingLinkSourceId = useWorkspaceStore(state => state.pendingLinkSourceId);
   const setPendingLinkSource = useWorkspaceStore(state => state.setPendingLinkSource);
+  const setPendingConnectionTarget = useWorkspaceStore(state => state.setPendingConnectionTarget);
   const addLink = useSimulationStore((state) => state.addLink);
+  const getAvailableInterfaces = useSimulationStore((state) => state.getAvailableInterfaces);
   const selectDevice = useWorkspaceStore(state => state.selectDevice);
   const selectedDeviceId = useWorkspaceStore(state => state.selectedDeviceId);
 
@@ -41,8 +43,18 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
         setPendingLinkSource(device.id);
       } else {
         if (pendingLinkSourceId !== device.id) {
-          addLink(pendingLinkSourceId, device.id);
-          setPendingLinkSource(null);
+          const sourceIfaces = getAvailableInterfaces(pendingLinkSourceId);
+          const targetIfaces = getAvailableInterfaces(device.id);
+
+          if (sourceIfaces.length === 1 && targetIfaces.length === 1) {
+            addLink(pendingLinkSourceId, sourceIfaces[0].id, device.id, targetIfaces[0].id);
+            setPendingLinkSource(null);
+          } else if (sourceIfaces.length === 0 || targetIfaces.length === 0) {
+            // Toast would be good here, but for now just clear
+            setPendingLinkSource(null);
+          } else {
+            setPendingConnectionTarget(device.id);
+          }
         } else {
           setPendingLinkSource(null); // toggle off
         }

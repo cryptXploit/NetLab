@@ -55,7 +55,9 @@ interface SimulationStoreState {
   updateDevicePosition: (id: string, x: number, y: number) => void;
   addDevice: (type: DeviceType, x: number, y: number) => void;
   removeDevice: (id: string) => void;
-  addLink: (sourceId: string, targetId: string) => void;
+  addLink: (sourceId: string, sourceIfaceId: string, targetId: string, targetIfaceId: string) => { success: boolean, error?: string };
+  removeLink: (linkId: string) => void;
+  getAvailableInterfaces: (deviceId: string) => import("../../core/domain/NetworkInterface").NetworkInterface[];
 }
 
 
@@ -676,13 +678,40 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     addDevice: (type: DeviceType, x: number, y: number) => {
       const eng = get().engine;
       const id = `${type.toLowerCase()}-${Math.random().toString(36).substring(2, 7)}`;
+      
       let newDevice;
       switch (type) {
-        case DeviceType.HOST: newDevice = createHost(id, 'New Host'); break;
-        case DeviceType.SWITCH: newDevice = createSwitch(id, 'New Switch'); break;
-        case DeviceType.ROUTER: newDevice = createRouter(id, 'New Router'); break;
-        case DeviceType.SERVER: newDevice = createServer(id, 'New Server'); break;
+        case DeviceType.HOST: {
+          const iface = createNetworkInterface(`eth0-${id}`, `M:${id.substring(0,4)}`, '0.0.0.0');
+          newDevice = createHost(id, 'New Host', [iface]);
+          break;
+        }
+        case DeviceType.SERVER: {
+          const iface = createNetworkInterface(`eth0-${id}`, `M:${id.substring(0,4)}`, '0.0.0.0');
+          newDevice = createServer(id, 'New Server', [iface]);
+          break;
+        }
+        case DeviceType.ROUTER: {
+          const ifaces = [
+            createNetworkInterface(`eth0-${id}`, `M:R0${id.substring(0,3)}`, '0.0.0.0'),
+            createNetworkInterface(`eth1-${id}`, `M:R1${id.substring(0,3)}`, '0.0.0.0'),
+            createNetworkInterface(`eth2-${id}`, `M:R2${id.substring(0,3)}`, '0.0.0.0')
+          ];
+          newDevice = createRouter(id, 'New Router', ifaces);
+          break;
+        }
+        case DeviceType.SWITCH: {
+          const ifaces = [
+            createNetworkInterface(`fa0/1-${id}`, `M:S1${id.substring(0,3)}`, ''),
+            createNetworkInterface(`fa0/2-${id}`, `M:S2${id.substring(0,3)}`, ''),
+            createNetworkInterface(`fa0/3-${id}`, `M:S3${id.substring(0,3)}`, ''),
+            createNetworkInterface(`fa0/4-${id}`, `M:S4${id.substring(0,3)}`, '')
+          ];
+          newDevice = createSwitch(id, 'New Switch', ifaces);
+          break;
+        }
       }
+      
       if (!newDevice) return;
       newDevice.metadata = { ...newDevice.metadata, x, y };
       eng.addDevice(newDevice);
@@ -694,20 +723,55 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       set({ devices: [...eng.getDevices()], links: [...eng.getLinks()] });
     },
 
-    addLink: (sourceId: string, targetId: string) => {
+    getAvailableInterfaces: (deviceId: string) => {
+      const eng = get().engine;
+      const device = eng.getDevice(deviceId);
+      if (!device) return [];
+      const links = eng.getLinks();
+      const usedIds = new Set<string>();
+      for (const l of links) {
+        usedIds.add(l.interface1Id);
+        usedIds.add(l.interface2Id);
+      }
+      return device.interfaces.filter(i => !usedIds.has(i.id));
+    },
+
+    addLink: (sourceId: string, sourceIfaceId: string, targetId: string, targetIfaceId: string) => {
       const eng = get().engine;
       const src = eng.getDevice(sourceId);
       const tgt = eng.getDevice(targetId);
-      if (!src || !tgt || sourceId === targetId) {
-        return;
-      }
       
-      const srcIface = src.interfaces[0]; // just bind to first interface for edit
-      const tgtIface = tgt.interfaces[0];
+      if (!src) return { success: false, error: 'Source device not found' };
+      if (!tgt) return { success: false, error: 'Target device not found' };
+      if (sourceId === targetId) return { success: false, error: 'Cannot connect device to itself' };
+      if (sourceIfaceId === targetIfaceId) return { success: false, error: 'Cannot connect interface to itself' };
+
+      const links = eng.getLinks();
+      // Check duplicate links on the exact same interfaces
+      const existing = links.find(l => 
+        (l.interface1Id === sourceIfaceId && l.interface2Id === targetIfaceId) ||
+        (l.interface1Id === targetIfaceId && l.interface2Id === sourceIfaceId)
+      );
+      if (existing) return { success: false, error: 'These exact interfaces are already connected' };
+
+      // Check if either interface is already occupied
+      const occupied = links.find(l => 
+        l.interface1Id === sourceIfaceId || l.interface2Id === sourceIfaceId ||
+        l.interface1Id === targetIfaceId || l.interface2Id === targetIfaceId
+      );
+      if (occupied) return { success: false, error: 'One or both interfaces are already occupied' };
+
       const linkId = `link-${Math.random().toString(36).substring(2, 7)}`;
-      eng.addLink(createLink(linkId, srcIface.id, tgtIface.id));
+      eng.addLink(createLink(linkId, sourceIfaceId, targetIfaceId));
       
-      set({ links: eng.getLinks() });
+      set({ links: [...eng.getLinks()] });
+      return { success: true };
+    },
+
+    removeLink: (linkId: string) => {
+      const eng = get().engine;
+      eng.removeLink(linkId);
+      set({ links: [...eng.getLinks()] });
     },
 
 

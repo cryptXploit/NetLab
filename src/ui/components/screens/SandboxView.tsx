@@ -6,6 +6,7 @@ import { SimulationControls } from '../controls/SimulationControls';
 import { PacketContextSheet } from '../context/PacketContextSheet';
 import { Terminal } from '../terminal/Terminal';
 import { DeviceContextSheet } from '../context/DeviceContextSheet';
+import { ConnectionSheet } from '../context/ConnectionSheet';
 import { NetworkDoctorPanel } from '../doctor/NetworkDoctorPanel';
 import { PredictionModal } from '../prediction/PredictionModal';
 import { PredictionResultModal } from '../prediction/PredictionResultModal';
@@ -138,6 +139,7 @@ export const SandboxView: React.FC = () => {
       <SimulationControls />
       <PacketContextSheet />
       <DeviceContextSheet />
+      <ConnectionSheet />
       
       {/* Floating Modals / Overlays */}
       <Terminal />

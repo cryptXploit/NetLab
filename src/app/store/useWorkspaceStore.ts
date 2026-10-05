@@ -14,7 +14,9 @@ interface WorkspaceStoreState {
   selectPacket: (id: string | null) => void;
 
   pendingLinkSourceId: string | null;
+  pendingConnectionTargetId: string | null;
   setPendingLinkSource: (id: string | null) => void;
+  setPendingConnectionTarget: (id: string | null) => void;
 
   activeTerminalDeviceId: string | null;
   openTerminal: (deviceId: string | null) => void;
@@ -57,7 +59,9 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
   selectPacket: (id) => set({ selectedPacketId: id }),
 
   pendingLinkSourceId: null,
+  pendingConnectionTargetId: null,
   setPendingLinkSource: (id) => set({ pendingLinkSourceId: id }),
+  setPendingConnectionTarget: (id) => set({ pendingConnectionTargetId: id }),
 
   activeTerminalDeviceId: null,
   openTerminal: (id) => set({ activeTerminalDeviceId: id }),

@@ -89,6 +89,10 @@ export class SimulationEngine {
     this.links.set(link.id, link);
   }
 
+  public removeLink(linkId: string): void {
+    this.links.delete(linkId);
+  }
+
   /**
    * Enqueues an event to be processed at a future tick.
    */

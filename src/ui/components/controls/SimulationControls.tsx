@@ -15,10 +15,10 @@ export const SimulationControls: React.FC = () => {
       
       <div className="flex space-x-2">
         <button
-          onClick={() => sendPing('hostA', 'hostB')}
+          onClick={() => sendPing('hostA', 'server.netlab')}
           className="px-4 py-2 bg-blue-600/50 hover:bg-blue-600/80 active:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
         >
-          Send Ping (A → B)
+          Ping server.netlab
         </button>
         <button
           onClick={stepForward}

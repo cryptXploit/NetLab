@@ -7,6 +7,7 @@ export const SimulationEventType = {
   PACKET_DROPPED: 'PACKET_DROPPED',
   LINK_STATE_CHANGED: 'LINK_STATE_CHANGED',
   DEVICE_POWER_CHANGED: 'DEVICE_POWER_CHANGED',
+  APP_PING_INTENT: 'APP_PING_INTENT',
 } as const;
 
 export type SimulationEventType = typeof SimulationEventType[keyof typeof SimulationEventType];

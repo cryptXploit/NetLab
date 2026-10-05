@@ -1,11 +1,13 @@
 import { type NetworkInterface } from './NetworkInterface';
 import { type Route } from './NetworkTypes';
 import { type Packet } from './Packet';
+import { type SimulationEvent } from '../events/SimulationEvent';
 
 export const DeviceType = {
   HOST: 'HOST',
   SWITCH: 'SWITCH',
   ROUTER: 'ROUTER',
+  SERVER: 'SERVER',
 } as const;
 
 export type DeviceType = typeof DeviceType[keyof typeof DeviceType];
@@ -20,7 +22,11 @@ export interface Device {
   routingTable: Route[];
   arpTable: Record<string, string>;
   arpQueue: Packet[];
-  macTable: Record<string, string>; // Used mainly by Switches
+  macTable: Record<string, string>;
+  dnsServerIp?: string;
+  dnsCache: Record<string, string>;
+  dnsRecords?: Record<string, string>;
+  dnsQueue: { targetHostname: string; pendingEvent: SimulationEvent }[];
 }
 
 export interface Host extends Device {
@@ -34,6 +40,10 @@ export interface Switch extends Device {
 
 export interface Router extends Device {
   type: typeof DeviceType.ROUTER;
+}
+
+export interface Server extends Device {
+  type: typeof DeviceType.SERVER;
 }
 
 export function createHost(
@@ -53,6 +63,8 @@ export function createHost(
     arpTable: {},
     arpQueue: [],
     macTable: {},
+    dnsCache: {},
+    dnsQueue: [],
   };
 }
 
@@ -71,6 +83,8 @@ export function createSwitch(
     arpTable: {},
     arpQueue: [],
     macTable: {},
+    dnsCache: {},
+    dnsQueue: [],
   };
 }
 
@@ -89,5 +103,28 @@ export function createRouter(
     arpTable: {},
     arpQueue: [],
     macTable: {},
+    dnsCache: {},
+    dnsQueue: [],
+  };
+}
+
+export function createServer(
+  id: string,
+  name: string,
+  interfaces: NetworkInterface[] = []
+): Server {
+  return {
+    id,
+    name,
+    type: DeviceType.SERVER,
+    interfaces,
+    isPoweredOn: true,
+    routingTable: [],
+    arpTable: {},
+    arpQueue: [],
+    macTable: {},
+    dnsCache: {},
+    dnsQueue: [],
+    dnsRecords: {},
   };
 }

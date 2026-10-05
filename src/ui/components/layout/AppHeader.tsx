@@ -1,6 +1,9 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
-import { Stethoscope, Shuffle, User } from 'lucide-react';
+import { Stethoscope, Shuffle, User, Share2, Download } from 'lucide-react';
+import { useState } from 'react';
+import { ShareLabModal } from '../sharing/ShareLabModal';
+import { ImportLabModal } from '../sharing/ImportLabModal';
 import { useProfileStore } from '../../../app/store/useProfileStore';
 
 export const AppHeader: React.FC = () => {
@@ -16,6 +19,8 @@ export const AppHeader: React.FC = () => {
   
   const level = useProfileStore(state => state.level);
   const toggleProfile = useProfileStore(state => state.toggleProfile);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   return (
     <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-4 select-none z-50 relative">
@@ -88,6 +93,21 @@ export const AppHeader: React.FC = () => {
 
       <div className="flex-1"></div>
       
+      <button 
+        onClick={() => setIsShareOpen(true)}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors"
+      >
+        <Share2 className="w-4 h-4" />
+        Share Lab
+      </button>
+      <button 
+        onClick={() => setIsImportOpen(true)}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors mr-2"
+      >
+        <Download className="w-4 h-4" />
+        Import Lab
+      </button>
+      
       <div className="border-l border-zinc-700 h-8 mx-2"></div>
       <button 
         onClick={toggleProfile}
@@ -98,6 +118,8 @@ export const AppHeader: React.FC = () => {
         </span>
         <User className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200" />
       </button>
+      <ShareLabModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
+      <ImportLabModal isOpen={isImportOpen} onClose={() => setIsImportOpen(false)} />
     </div>
   );
 };

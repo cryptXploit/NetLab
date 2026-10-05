@@ -14,6 +14,7 @@ import { handleSwitching } from '../../core/protocols/Ethernet';
 import { findLongestPrefixMatch } from '../../core/network/Routing';
 import { injectLinkFailure, injectWrongGateway } from '../../core/simulation/FaultInjector';
 import { generateRandomTroubleshootingLab } from '../../core/simulation/ScenarioGenerator';
+import { LabShareService } from '../../core/sharing/LabShareService';
 
 import { useProfileStore } from './useProfileStore';
 
@@ -49,6 +50,7 @@ interface SimulationStoreState {
   loadBrokenGatewayLab: () => void;
   loadRandomScenario: () => void;
   restoreSnapshot: (snapshot: any) => void;
+  loadSharedLab: (hash: string) => boolean;
   stepForward: () => void;
   reset: () => void;
   sendPing: (sourceId: string, targetHostname: string) => void;
@@ -593,6 +595,32 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         activePrediction: null,
         diagnosticReport: null
       });
+    },
+
+    loadSharedLab: (hash: string) => {
+      try {
+        const importedLab = LabShareService.importLabFromHash(hash);
+        const newEngine = new SimulationEngine();
+        newEngine.restoreSnapshot(importedLab);
+        registerEngineHandlers(newEngine);
+
+        set({ engine: newEngine });
+        set({
+          devices: newEngine.getDevices(),
+          links: newEngine.getLinks(),
+          currentTick: newEngine.getCurrentTick(),
+          eventHistory: newEngine.getEventHistory(),
+          activePackets: newEngine.getActivePackets(),
+          selectedPacketId: null,
+          isLabResolved: false,
+          activePrediction: null,
+          diagnosticReport: null
+        });
+        return true;
+      } catch (err) {
+        console.error(err);
+        return false;
+      }
     },
 
     loadRandomScenario: () => {

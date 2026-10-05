@@ -15,7 +15,7 @@ export const TutorialOverlay: React.FC = () => {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[200] w-full max-w-sm pointer-events-auto"
+          className="fixed bottom-28 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-[200] md:w-full md:max-w-sm pointer-events-auto"
         >
           <div className="bg-zinc-900 border-2 border-indigo-500/50 rounded-2xl shadow-[0_20px_50px_rgba(79,70,229,0.2)] p-5 overflow-hidden relative">
             {/* Background glow */}

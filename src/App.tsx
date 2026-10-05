@@ -6,6 +6,7 @@ import { PacketInspector } from './ui/components/inspector/PacketInspector';
 import { Terminal } from './ui/components/terminal/Terminal';
 import { AppHeader } from './ui/components/layout/AppHeader';
 import { DeviceConfigPanel } from './ui/components/config/DeviceConfigPanel';
+import { NetworkDoctorPanel } from './ui/components/doctor/NetworkDoctorPanel';
 
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
@@ -23,6 +24,7 @@ function App() {
         <PacketInspector />
         <Terminal />
         <DeviceConfigPanel />
+        <NetworkDoctorPanel />
       </div>
     </div>
   );

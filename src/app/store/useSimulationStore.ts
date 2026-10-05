@@ -14,6 +14,8 @@ import { handleSwitching } from '../../core/protocols/Ethernet';
 import { findLongestPrefixMatch } from '../../core/network/Routing';
 import { injectLinkFailure, injectWrongGateway } from '../../core/simulation/FaultInjector';
 
+import { type DiagnosticReport, evaluateNetworkHealth } from '../../core/simulation/NetworkDoctor';
+
 interface SimulationStoreState {
   engine: SimulationEngine;
   devices: Device[];
@@ -26,6 +28,7 @@ interface SimulationStoreState {
   pendingLinkSourceId: string | null;
   activeTerminalDeviceId: string | null;
   selectedDeviceIdForConfig: string | null;
+  diagnosticReport: DiagnosticReport | null;
 
   loadBasicLab: () => void;
   loadBrokenGatewayLab: () => void;
@@ -39,6 +42,8 @@ interface SimulationStoreState {
   updateDeviceInterface: (deviceId: string, interfaceId: string, ip: string) => void;
   updateDeviceRoute: (deviceId: string, network: string, prefix: number, nextHop: string) => void;
   injectFault: (type: 'LINK_DOWN' | 'BAD_GATEWAY') => void;
+  runDiagnostics: () => void;
+  clearDiagnostics: () => void;
 
   setMode: (mode: 'SIMULATE' | 'EDIT') => void;
   updateDevicePosition: (id: string, x: number, y: number) => void;
@@ -340,6 +345,18 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     pendingLinkSourceId: null,
     activeTerminalDeviceId: null,
     selectedDeviceIdForConfig: null,
+    diagnosticReport: null,
+
+    // ... (rest is injected below)
+    runDiagnostics: () => {
+      const eng = get().engine;
+      const report = evaluateNetworkHealth(eng);
+      set({ diagnosticReport: report });
+    },
+
+    clearDiagnostics: () => {
+      set({ diagnosticReport: null });
+    },
 
     loadBasicLab: () => {
       const newEngine = new SimulationEngine();

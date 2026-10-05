@@ -1,9 +1,18 @@
 import React from 'react';
 import { useProfileStore } from '../../../app/store/useProfileStore';
-import { X, Award, Terminal, Zap } from 'lucide-react';
+import { X, Award, Terminal, Zap, Clock } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { db, type ActivityHistory } from '../../../core/persistence/db';
 
 export const ProfileModal: React.FC = () => {
   const { totalXp, level, topicMastery, isProfileOpen, toggleProfile } = useProfileStore();
+  const [history, setHistory] = useState<ActivityHistory[]>([]);
+
+  useEffect(() => {
+    if (isProfileOpen) {
+      db.history.orderBy('timestamp').reverse().limit(5).toArray().then(setHistory).catch(console.error);
+    }
+  }, [isProfileOpen, totalXp]);
 
   if (!isProfileOpen) return null;
 
@@ -81,6 +90,26 @@ export const ProfileModal: React.FC = () => {
             </div>
             <div className="text-lg font-black text-orange-400">{topicMastery.troubleshooting} <span className="text-xs text-zinc-600 font-normal">XP</span></div>
           </div>
+        </div>
+
+        {/* Recent Activity Section */}
+        <div className="p-6 pt-0 flex flex-col gap-3">
+          <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-1 flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            Recent Activity
+          </h3>
+          {history.length === 0 ? (
+            <div className="text-zinc-600 text-sm italic">No recent activity.</div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {history.map((record, idx) => (
+                <div key={record.id || idx} className="flex items-center justify-between bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50">
+                  <div className="text-sm text-zinc-300">{record.description}</div>
+                  <div className="text-xs font-bold text-green-400">+{record.xpEarned} XP</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

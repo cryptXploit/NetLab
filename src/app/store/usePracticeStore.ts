@@ -35,7 +35,7 @@ export const usePracticeStore = create<PracticeStoreState>((set, get) => ({
     const isCorrect = normalizedInput === normalizedExpected;
 
     if (isCorrect) {
-      useProfileStore.getState().addXp(10, 'subnetting');
+      useProfileStore.getState().addXp(10, 'subnetting', `Answered ${activeQuestion.type.replace('_', ' ').toLowerCase()} question`);
     }
 
     set({

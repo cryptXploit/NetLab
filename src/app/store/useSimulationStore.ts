@@ -401,7 +401,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       
       const { isLabResolved } = get();
       if (report.isHealthy && !isLabResolved) {
-        useProfileStore.getState().addXp(50, 'troubleshooting');
+        useProfileStore.getState().addXp(50, 'troubleshooting', 'Resolved network anomaly');
         set({ diagnosticReport: report, isLabResolved: true });
       } else {
         set({ diagnosticReport: report });

@@ -14,13 +14,17 @@ import { PracticeView } from './ui/components/practice/PracticeView';
 
 import { ProfileModal } from './ui/components/profile/ProfileModal';
 
+import { useProfileStore } from './app/store/useProfileStore';
+
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
   const currentView = useSimulationStore((state) => state.currentView);
+  const initializeProfile = useProfileStore((state) => state.initializeProfile);
 
   useEffect(() => {
     loadBasicLab();
-  }, [loadBasicLab]);
+    initializeProfile();
+  }, [loadBasicLab, initializeProfile]);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col">

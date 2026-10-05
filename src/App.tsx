@@ -7,6 +7,8 @@ import { Terminal } from './ui/components/terminal/Terminal';
 import { AppHeader } from './ui/components/layout/AppHeader';
 import { DeviceConfigPanel } from './ui/components/config/DeviceConfigPanel';
 import { NetworkDoctorPanel } from './ui/components/doctor/NetworkDoctorPanel';
+import { PredictionModal } from './ui/components/prediction/PredictionModal';
+import { PredictionResultModal } from './ui/components/prediction/PredictionResultModal';
 
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
@@ -25,6 +27,8 @@ function App() {
         <Terminal />
         <DeviceConfigPanel />
         <NetworkDoctorPanel />
+        <PredictionModal />
+        <PredictionResultModal />
       </div>
     </div>
   );

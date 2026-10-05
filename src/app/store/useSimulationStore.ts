@@ -29,6 +29,14 @@ interface SimulationStoreState {
   activeTerminalDeviceId: string | null;
   selectedDeviceIdForConfig: string | null;
   diagnosticReport: DiagnosticReport | null;
+  isPredictionModeEnabled: boolean;
+  pendingPrediction: { sourceId: string; targetId: string } | null;
+  activePrediction: { packetId: string; expectedOutcome: 'DELIVERED' | 'DROPPED' } | null;
+  predictionResult: { success: boolean; actualOutcome: string; explanation: string } | null;
+
+  togglePredictionMode: () => void;
+  submitPrediction: (expectedOutcome: 'DELIVERED' | 'DROPPED') => void;
+  clearPredictionResult: () => void;
 
   loadBasicLab: () => void;
   loadBrokenGatewayLab: () => void;
@@ -136,7 +144,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
           const route = findLongestPrefixMatch(resolvedIp, srcDevice.routingTable);
           if (!route) return;
       
-          const pktId = Math.random().toString(36).substring(2, 9);
+          const pktId = event.payload.packetId || Math.random().toString(36).substring(2, 9);
           const pkt = createPacket(
             `pkt-${pktId}`,
             srcIface.macAddress,
@@ -244,7 +252,13 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
             payload: { packet },
             explanation: `Physical layer failure: Link or Interface is DOWN.`,
           }, 0);
+          const state = useSimulationStore.getState();
+          if (state.activePrediction && state.activePrediction.packetId === packet.id) {
+            const success = state.activePrediction.expectedOutcome === 'DROPPED';
+            useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DROPPED', explanation: `Physical layer failure: Link or Interface is DOWN.` }, activePrediction: null });
+          }
           return;
+          // dummy code to replace old return:
         }
 
         if (targetDeviceId) {
@@ -269,6 +283,11 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         const payload = event.payload;
         const packet = payload.packet;
         eng.removeActivePacket(packet.id);
+        const state = useSimulationStore.getState();
+        if (state.activePrediction && state.activePrediction.packetId === packet.id) {
+          const success = state.activePrediction.expectedOutcome === 'DELIVERED';
+          useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DELIVERED', explanation: event.explanation || 'Packet delivered successfully.' }, activePrediction: null });
+        }
         
         const receivingDevice = eng.getDevice(payload.receivingDeviceId);
         if (!receivingDevice) return;
@@ -310,7 +329,13 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
                 payload: { packet },
                 explanation: `TTL expired in transit.`,
               }, 0);
+              const state = useSimulationStore.getState();
+              if (state.activePrediction && state.activePrediction.packetId === packet.id) {
+                const success = state.activePrediction.expectedOutcome === 'DROPPED';
+                useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DROPPED', explanation: `TTL expired in transit.` }, activePrediction: null });
+              }
               return;
+              // dummy code to replace old return:
             }
 
             const nextHopIp = route.nextHop || packet.destinationIp;
@@ -326,6 +351,11 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
               payload: { packet },
               explanation: `No route to destination.`,
             }, 0);
+            const state = useSimulationStore.getState();
+            if (state.activePrediction && state.activePrediction.packetId === packet.id) {
+              const success = state.activePrediction.expectedOutcome === 'DROPPED';
+              useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DROPPED', explanation: `No route to destination.` }, activePrediction: null });
+            }
           }
         }
       });
@@ -346,6 +376,10 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     activeTerminalDeviceId: null,
     selectedDeviceIdForConfig: null,
     diagnosticReport: null,
+    isPredictionModeEnabled: false,
+    pendingPrediction: null,
+    activePrediction: null,
+    predictionResult: null,
 
     // ... (rest is injected below)
     runDiagnostics: () => {
@@ -534,7 +568,44 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       get().loadBasicLab();
     },
 
+    togglePredictionMode: () => {
+      set({ isPredictionModeEnabled: !get().isPredictionModeEnabled });
+    },
+
+    submitPrediction: (expectedOutcome: 'DELIVERED' | 'DROPPED') => {
+      const pending = get().pendingPrediction;
+      if (!pending) return;
+      const packetId = Math.random().toString(36).substring(2, 9);
+      set({ 
+        activePrediction: { packetId: `pkt-${packetId}`, expectedOutcome },
+        pendingPrediction: null
+      });
+
+      const currentEngine = get().engine;
+      currentEngine.enqueueEvent({
+        id: `intent-${Math.random().toString(36).substring(2, 9)}`,
+        timestamp: 0,
+        type: SimulationEventType.APP_PING_INTENT,
+        payload: { sourceId: pending.sourceId, targetHostname: pending.targetId, packetId },
+        explanation: `Application requested ping to ${pending.targetId}.`
+      }, 0);
+
+      set({
+        currentTick: currentEngine.getCurrentTick(),
+        eventHistory: currentEngine.getEventHistory(),
+        activePackets: currentEngine.getActivePackets(),
+      });
+    },
+
+    clearPredictionResult: () => {
+      set({ predictionResult: null });
+    },
+
     sendPing: (sourceId: string, targetHostname: string) => {
+      if (get().isPredictionModeEnabled) {
+        set({ pendingPrediction: { sourceId, targetId: targetHostname } });
+        return;
+      }
       const currentEngine = get().engine;
       
       currentEngine.enqueueEvent({

@@ -48,6 +48,8 @@ export class SimulationEngine {
     this.devices.set(device.id, device);
   }
 
+  public clear(): void { this.devices.clear(); this.links.clear(); this.eventQueue.clear(); this.eventHistory = []; this.activePackets = []; this.currentTick = 0; }
+
   public removeDevice(id: string): void {
     const device = this.devices.get(id);
     if (!device) return;

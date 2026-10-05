@@ -9,6 +9,7 @@ export interface UserProfile {
     troubleshooting: number;
   };
   unlockedAchievements: string[];
+  tutorialCompleted?: boolean;
 }
 
 export interface ActivityHistory {

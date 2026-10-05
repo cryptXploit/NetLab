@@ -5,7 +5,8 @@ import { LibraryService } from '../../../core/persistence/LibraryService';
 import { useLibraryStore } from '../../../app/store/useLibraryStore';
 import { useToastStore } from '../../../app/store/useToastStore';
 import { useState } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, HelpCircle } from 'lucide-react';
+import { useTutorialStore } from '../../../app/store/useTutorialStore';
 import { useSettingsStore } from '../../../app/store/useSettingsStore';
 import { useTranslation } from 'react-i18next';
 import { ShareLabModal } from '../sharing/ShareLabModal';
@@ -27,6 +28,7 @@ export const AppHeader: React.FC = () => {
   const toggleProfile = useProfileStore(state => state.toggleProfile);
   const toggleSettings = useSettingsStore(state => state.toggleSettings);
   const toggleLibrary = useLibraryStore(state => state.toggleLibrary);
+  const startTutorial = useTutorialStore(state => state.startTutorial);
   const addToast = useToastStore(state => state.addToast);
   const engine = useSimulationStore(state => state.engine);
   const { t } = useTranslation();
@@ -146,6 +148,12 @@ export const AppHeader: React.FC = () => {
       </button>
       
       <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <button 
+        onClick={startTutorial}
+        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors"
+      >
+        <HelpCircle className="w-5 h-5" />
+      </button>
       <button 
         onClick={toggleSettings}
         className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors"

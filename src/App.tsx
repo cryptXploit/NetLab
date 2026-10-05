@@ -19,6 +19,8 @@ import { useProfileStore } from './app/store/useProfileStore';
 import { useSettingsStore } from './app/store/useSettingsStore';
 import { SettingsModal } from './ui/components/settings/SettingsModal';
 import { LabLibraryModal } from './ui/components/library/LabLibraryModal';
+import { TutorialOverlay } from './ui/components/tutorial/TutorialOverlay';
+import { useTutorialStore } from './app/store/useTutorialStore';
 import { AppBootService } from './core/native/AppBootService';
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
   const currentView = useSimulationStore((state) => state.currentView);
   const initializeProfile = useProfileStore((state) => state.initializeProfile);
   const initializeSettings = useSettingsStore((state) => state.initializeSettings);
+  const isProfileLoaded = useProfileStore((state) => state.isLoaded);
+  const startTutorial = useTutorialStore((state) => state.startTutorial);
 
   useEffect(() => {
     loadBasicLab();
@@ -33,6 +37,15 @@ function App() {
     initializeSettings();
     AppBootService.initializeNativeApp();
   }, [loadBasicLab, initializeProfile, initializeSettings]);
+
+  useEffect(() => {
+    if (isProfileLoaded) {
+      const state = useProfileStore.getState() as any;
+      if (!state.tutorialCompleted) {
+        startTutorial();
+      }
+    }
+  }, [isProfileLoaded, startTutorial]);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col">
@@ -57,6 +70,7 @@ function App() {
       <SettingsModal />
       <LabLibraryModal />
       <ToastContainer />
+      <TutorialOverlay />
     </div>
   );
 }

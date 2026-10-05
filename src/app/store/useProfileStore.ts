@@ -15,8 +15,10 @@ interface ProfileStoreState {
   };
   isProfileOpen: boolean;
   unlockedAchievements: string[];
+  tutorialCompleted: boolean;
 
   initializeProfile: () => Promise<void>;
+  completeTutorial: () => void;
   unlockAchievement: (id: string) => void;
   evaluateAchievements: () => void;
   addXp: (amount: number, topic: Topic, description: string) => void;
@@ -35,6 +37,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
   },
   isProfileOpen: false,
   unlockedAchievements: [],
+  tutorialCompleted: false,
 
   initializeProfile: async () => {
     try {
@@ -45,6 +48,7 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
           level: profile.level,
           topicMastery: profile.topicMastery,
           unlockedAchievements: profile.unlockedAchievements || [],
+          tutorialCompleted: profile.tutorialCompleted || false,
           isLoaded: true
         });
       } else {
@@ -53,7 +57,8 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
           totalXp: 0,
           level: 1,
           topicMastery: { subnetting: 0, troubleshooting: 0 },
-          unlockedAchievements: []
+          unlockedAchievements: [],
+          tutorialCompleted: false
         };
         await db.profile.add(defaultProfile);
         set({ isLoaded: true });
@@ -126,6 +131,19 @@ export const useProfileStore = create<ProfileStoreState>((set, get) => ({
     const { topicMastery } = get();
     if (topicMastery.subnetting >= 50) {
       get().unlockAchievement('SUBNET_NOVICE');
+    }
+  },
+
+  completeTutorial: async () => {
+    set({ tutorialCompleted: true });
+    try {
+      const profile = await db.profile.get('me');
+      if (profile) {
+        profile.tutorialCompleted = true;
+        await db.profile.put(profile);
+      }
+    } catch (e) {
+      console.error(e);
     }
   },
 

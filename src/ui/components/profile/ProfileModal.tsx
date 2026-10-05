@@ -4,11 +4,62 @@ import { X, Award, Terminal, Zap, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ACHIEVEMENTS } from '../../../core/gamification/Achievements';
 import * as Icons from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
+import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { BackupService } from '../../../core/persistence/BackupService';
+import { useToastStore } from '../../../app/store/useToastStore';
 import { db, type ActivityHistory } from '../../../core/persistence/db';
 
 export const ProfileModal: React.FC = () => {
   const { totalXp, level, topicMastery, isProfileOpen, toggleProfile } = useProfileStore();
   const [history, setHistory] = useState<ActivityHistory[]>([]);
+
+    const engine = useSimulationStore(state => state.engine);
+  const restoreSnapshot = useSimulationStore(state => state.restoreSnapshot);
+  const initializeProfile = useProfileStore(state => state.initializeProfile);
+  const addToast = useToastStore(state => state.addToast);
+
+  const handleExport = async () => {
+    try {
+      const json = await BackupService.exportBackup(engine);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'netlab-backup.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addToast('Backup Exported', 'Your profile and lab state have been downloaded.', 'success');
+    } catch (err) {
+      console.error(err);
+      addToast('Export Failed', 'An error occurred while generating the backup.', 'info');
+    }
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const importedLab = await BackupService.importBackup(text);
+        
+        await initializeProfile();
+        restoreSnapshot(importedLab);
+        
+        addToast('Backup Restored', 'Profile and lab state have been successfully imported.', 'success');
+      } catch (err) {
+        console.error(err);
+        addToast('Import Failed', 'Invalid or corrupted backup file.', 'info');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // reset input
+  };
 
   useEffect(() => {
     if (isProfileOpen) {
@@ -146,6 +197,24 @@ export const ProfileModal: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Data & Backup Section */}
+        <div className="p-6 pt-0 flex flex-col gap-3 border-t border-zinc-800/50 mt-4 pt-4">
+          <div className="flex justify-between gap-4">
+            <button
+              onClick={handleExport}
+              className="flex-1 flex items-center justify-center gap-2 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors text-sm font-bold border border-zinc-700"
+            >
+              <Download className="w-4 h-4" />
+              Export Backup
+            </button>
+            <label className="flex-1 flex items-center justify-center gap-2 py-2 bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 rounded-lg transition-colors text-sm font-bold border border-indigo-500/40 cursor-pointer">
+              <Upload className="w-4 h-4" />
+              Import Backup
+              <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+            </label>
+          </div>
         </div>
       </div>
     </div>

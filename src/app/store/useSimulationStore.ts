@@ -48,6 +48,7 @@ interface SimulationStoreState {
   loadBasicLab: () => void;
   loadBrokenGatewayLab: () => void;
   loadRandomScenario: () => void;
+  restoreSnapshot: (snapshot: any) => void;
   stepForward: () => void;
   reset: () => void;
   sendPing: (sourceId: string, targetHostname: string) => void;
@@ -572,6 +573,25 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         activePackets: newEngine.getActivePackets(),
         selectedPacketId: null,
         isLabResolved: false,
+      });
+    },
+
+    restoreSnapshot: (snapshot: any) => {
+      const newEngine = new SimulationEngine();
+      newEngine.restoreSnapshot(snapshot);
+      registerEngineHandlers(newEngine);
+
+      set({ engine: newEngine });
+      set({
+        devices: newEngine.getDevices(),
+        links: newEngine.getLinks(),
+        currentTick: newEngine.getCurrentTick(),
+        eventHistory: newEngine.getEventHistory(),
+        activePackets: newEngine.getActivePackets(),
+        selectedPacketId: null,
+        isLabResolved: false,
+        activePrediction: null,
+        diagnosticReport: null
       });
     },
 

@@ -57,14 +57,14 @@ export const Terminal: React.FC = () => {
   };
 
   const getSuggestions = () => {
-    const common = ['ping', 'help'];
+    const common = ['ping 10.0.0.10', 'ipconfig'];
     if (device.type === DeviceType.ROUTER) {
-      return [...common, 'route', 'arp', 'show ip route'];
+      return [...common, 'show arp', 'show ip route'];
     }
     if (device.type === DeviceType.SWITCH) {
-      return [...common, 'mac', 'show mac address-table'];
+      return [...common, 'show arp'];
     }
-    return [...common, 'arp'];
+    return [...common, 'show arp'];
   };
 
   return (

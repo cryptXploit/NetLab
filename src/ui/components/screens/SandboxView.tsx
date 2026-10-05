@@ -43,10 +43,6 @@ export const SandboxView: React.FC = () => {
     }
   };
 
-  const handleFault = () => {
-    setMenuOpen(false);
-    injectFault('LINK_DOWN');
-  };
   
   const handleDiagnose = () => {
     setMenuOpen(false);
@@ -102,10 +98,16 @@ export const SandboxView: React.FC = () => {
               </button>
               
               <button 
-                onClick={handleFault}
+                onClick={() => { setMenuOpen(false); injectFault('LINK_DOWN'); }}
                 className="px-4 py-2 text-left text-sm font-medium text-primary hover:bg-elevated flex items-center gap-2"
               >
-                <ShieldAlert className="w-4 h-4 text-danger" /> Inject Fault
+                <ShieldAlert className="w-4 h-4 text-warning" /> Link Down Fault
+              </button>
+              <button 
+                onClick={() => { setMenuOpen(false); injectFault('BAD_GATEWAY'); }}
+                className="px-4 py-2 text-left text-sm font-medium text-primary hover:bg-elevated flex items-center gap-2"
+              >
+                <ShieldAlert className="w-4 h-4 text-danger" /> Bad Gateway Fault
               </button>
               
               <div className="h-px w-full bg-border-base my-1" />

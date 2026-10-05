@@ -10,6 +10,7 @@ export const DeviceContextSheet: React.FC = () => {
   const selectDevice = useWorkspaceStore(state => state.selectDevice);
   const openTerminal = useWorkspaceStore(state => state.openTerminal);
   const devices = useSimulationStore(state => state.devices);
+  const removeDevice = useSimulationStore(state => state.removeDevice);
   const setPendingPrediction = useWorkspaceStore(state => state.setPendingPrediction);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'interfaces' | 'routing'>('overview');
@@ -21,9 +22,9 @@ export const DeviceContextSheet: React.FC = () => {
 
   const handlePing = () => {
     // We prompt for a target for now, later we can have a proper target selector UI
-    const target = window.prompt(`Send ping from ${device.name} to:`, 'server.netlab');
+    const target = window.prompt(`Send ping from ${device.name} to:`, '');
     if (target) {
-      setPendingPrediction({ sourceId: device.id, targetId: target });
+      if (useWorkspaceStore.getState().isPredictionModeEnabled) { setPendingPrediction({ sourceId: device.id, targetId: target }); } else { useSimulationStore.getState().sendPing(device.id, target); }
     }
   };
 
@@ -33,7 +34,7 @@ export const DeviceContextSheet: React.FC = () => {
 
   const handleDelete = () => {
     if (window.confirm(`Delete device ${device.name}?`)) {
-      /* removeDevice(device.id); */
+      removeDevice(device.id);
       selectDevice(null);
     }
   };
@@ -146,9 +147,6 @@ export const DeviceContextSheet: React.FC = () => {
                   <div>MAC: {iface.macAddress}</div>
                   {iface.ipAddress && (
                     <div>IP: {iface.ipAddress}/</div>
-                  )}
-                  {false /* TODO: DHCP Flag */ && (
-                    <div className="text-tech-accent">DHCP Enabled</div>
                   )}
                 </div>
               </div>

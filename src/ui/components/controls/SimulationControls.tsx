@@ -45,7 +45,7 @@ export const SimulationControls: React.FC = () => {
   
   const handleAddDevice = (type: DeviceType) => {
     HapticService.tap();
-    addDevice(type as any, 100, 100);
+    addDevice(type, 100, 100);
     setShowAddMenu(false);
   };
 

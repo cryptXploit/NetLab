@@ -42,6 +42,7 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
       } else {
         if (pendingLinkSourceId !== device.id) {
           addLink(pendingLinkSourceId, device.id);
+          setPendingLinkSource(null);
         } else {
           setPendingLinkSource(null); // toggle off
         }

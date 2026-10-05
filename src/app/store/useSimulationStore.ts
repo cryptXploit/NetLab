@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { SimulationEngine, type ActivePacket } from '../../core/simulation/SimulationEngine';
-import { createHost, createRouter, createSwitch, createServer, type Device } from '../../core/domain/Device';
+import { DeviceType, createHost, createRouter, createSwitch, createServer, type Device } from '../../core/domain/Device';
 import { createNetworkInterface } from '../../core/domain/NetworkInterface';
 import { createLink, type Link } from '../../core/domain/Link';
 import { SimulationEventType, type SimulationEvent } from '../../core/events/SimulationEvent';
@@ -53,9 +53,14 @@ interface SimulationStoreState {
   injectFault: (type: 'LINK_DOWN' | 'BAD_GATEWAY') => void;
 
   updateDevicePosition: (id: string, x: number, y: number) => void;
-  addDevice: (type: 'HOST' | 'SWITCH' | 'ROUTER', x: number, y: number) => void;
+  addDevice: (type: DeviceType, x: number, y: number) => void;
+  removeDevice: (id: string) => void;
   addLink: (sourceId: string, targetId: string) => void;
 }
+
+
+
+let playbackTimerId: any = null;
 
 export const useSimulationStore = create<SimulationStoreState>((set, get) => {
   const engine = new SimulationEngine();
@@ -564,18 +569,20 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     play: () => {
     if (get().isPlaying) return;
     set({ isPlaying: true });
+      if (playbackTimerId) clearTimeout(playbackTimerId);
     
     const loop = () => {
       if (!get().isPlaying) return;
       get().stepForward();
       // Using setTimeout instead of interval for safer state access
-      setTimeout(loop, 1000 / get().playbackSpeed);
+      playbackTimerId = setTimeout(loop, 1000 / get().playbackSpeed) as any;
     };
     loop();
   },
   
   pause: () => {
     set({ isPlaying: false });
+      if (playbackTimerId) { clearTimeout(playbackTimerId); playbackTimerId = null; }
   },
   
   setSpeed: (speed: number) => {
@@ -594,7 +601,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       });
     },
 
-    reset: () => {
+    reset: () => { get().pause();
       get().loadBasicLab();
     },
 
@@ -666,18 +673,25 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       }
     },
 
-    addDevice: (type: 'HOST' | 'SWITCH' | 'ROUTER', x: number, y: number) => {
+    addDevice: (type: DeviceType, x: number, y: number) => {
       const eng = get().engine;
       const id = `${type.toLowerCase()}-${Math.random().toString(36).substring(2, 7)}`;
-      const iface = createNetworkInterface(`if-${id}-1`, `M:${id.substring(0,4)}`, '0.0.0.0');
       let newDevice;
-      if (type === 'HOST') newDevice = createHost(id, `New ${type}`, [iface]);
-      else if (type === 'SWITCH') newDevice = createSwitch(id, `New ${type}`, [iface, createNetworkInterface(`if-${id}-2`, `M:${id.substring(0,4)}2`, '')]);
-      else newDevice = createRouter(id, `New ${type}`, [iface]);
-
-      newDevice.metadata = { x, y };
+      switch (type) {
+        case DeviceType.HOST: newDevice = createHost(id, 'New Host'); break;
+        case DeviceType.SWITCH: newDevice = createSwitch(id, 'New Switch'); break;
+        case DeviceType.ROUTER: newDevice = createRouter(id, 'New Router'); break;
+        case DeviceType.SERVER: newDevice = createServer(id, 'New Server'); break;
+      }
+      if (!newDevice) return;
+      newDevice.metadata = { ...newDevice.metadata, x, y };
       eng.addDevice(newDevice);
       set({ devices: [...eng.getDevices()] });
+    },
+    removeDevice: (id: string) => {
+      const eng = get().engine;
+      eng.removeDevice(id);
+      set({ devices: [...eng.getDevices()], links: [...eng.getLinks()] });
     },
 
     addLink: (sourceId: string, targetId: string) => {

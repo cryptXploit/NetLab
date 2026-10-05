@@ -48,6 +48,19 @@ export class SimulationEngine {
     this.devices.set(device.id, device);
   }
 
+  public removeDevice(id: string): void {
+    const device = this.devices.get(id);
+    if (!device) return;
+    const ifaceIds = device.interfaces.map(i => i.id);
+    for (const [linkId, link] of this.links.entries()) {
+      if (ifaceIds.includes(link.interface1Id) || ifaceIds.includes(link.interface2Id)) {
+        this.links.delete(linkId);
+      }
+    }
+    this.devices.delete(id);
+  }
+
+
   /**
    * Adds a link to the simulation topology, verifying the endpoints exist.
    */

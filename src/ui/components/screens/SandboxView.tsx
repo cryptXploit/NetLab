@@ -15,6 +15,8 @@ import { PredictionModal } from '../prediction/PredictionModal';
 import { PracticeOverlay } from '../practice/PracticeOverlay';
 import { usePracticeStore } from '../../../app/store/usePracticeStore';
 import { PredictionResultModal } from '../prediction/PredictionResultModal';
+import { ReplayTimeline } from '../timeline/ReplayTimeline';
+import { EventDetailPanel } from '../timeline/EventDetailPanel';
 import { ShareLabModal } from '../sharing/ShareLabModal';
 import { ImportLabModal } from '../sharing/ImportLabModal';
 import { Stethoscope, ShieldAlert, Save, Library, MoreVertical, ChevronLeft } from 'lucide-react';
@@ -155,6 +157,8 @@ export const SandboxView: React.FC = () => {
       <PredictionModal />
         {activePracticeId ? <PracticeOverlay /> : (activeLab?.mode === 'troubleshooting' ? <TroubleshootingOverlay /> : (activeLab ? <LabOverlay /> : null))}
       <PredictionResultModal />
+        <ReplayTimeline />
+        <EventDetailPanel />
       <ShareLabModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
       <ImportLabModal isOpen={isImportOpen} onClose={() => setIsImportOpen(false)} />
       <LabLibraryModal />

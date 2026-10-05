@@ -3,6 +3,7 @@ import { usePracticeStore } from '../../../app/store/usePracticeStore';
 import { Play, TrendingUp, TrendingDown, Target, Zap } from 'lucide-react';
 import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useTimelineStore } from '../../../app/store/useTimelineStore';
 import { generateWrongGatewayPractice } from '../../../core/simulation/ScenarioGenerator';
 import { RecommendationEngine } from '../../../core/learning/RecommendationEngine';
 import { MasteryEngine } from '../../../core/learning/MasteryEngine';
@@ -38,6 +39,7 @@ export const PracticeView: React.FC = () => {
 
     startPractice('generated-gw', 'Troubleshooting' as any, seed, labDef.skills, labDef.difficulty);
     setTab('sandbox');
+    useTimelineStore.getState().setReplayMode(false, engine.createSnapshot());
   };
 
   const { recommendation, allMastery } = useMemo(() => {

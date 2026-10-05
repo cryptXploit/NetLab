@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLabStore } from '../../../app/store/useLabStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+
 import { evaluateRules } from '../../../core/simulation/ScenarioEvaluator';
 import { CheckCircle2, ChevronRight, HelpCircle, X, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

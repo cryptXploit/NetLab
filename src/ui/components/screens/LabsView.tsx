@@ -2,6 +2,7 @@ import React from 'react';
 import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { useLabStore } from '../../../app/store/useLabStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useTimelineStore } from '../../../app/store/useTimelineStore';
 import { Network, Server, Share2, Activity, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { CURRICULUM } from '../../../data/curriculum';
 
@@ -41,6 +42,7 @@ export const LabsView: React.FC = () => {
     });
 
     startLab(labId);
+      useTimelineStore.getState().setReplayMode(false, engine.createSnapshot());
     setTab('sandbox');
   };
 

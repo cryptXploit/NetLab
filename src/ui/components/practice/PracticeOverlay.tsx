@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePracticeStore } from '../../../app/store/usePracticeStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+
 import { evaluateRules } from '../../../core/simulation/ScenarioEvaluator';
 import { generateWrongGatewayPractice } from '../../../core/simulation/ScenarioGenerator';
 import { CheckCircle2, HelpCircle, X, Maximize2, Minimize2, ShieldAlert } from 'lucide-react';

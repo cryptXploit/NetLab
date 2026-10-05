@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { SimulationEngine, type ActivePacket } from '../../core/simulation/SimulationEngine';
-import { createHost, createRouter, type Device } from '../../core/domain/Device';
+import { createHost, type Device } from '../../core/domain/Device';
 import { createNetworkInterface } from '../../core/domain/NetworkInterface';
 import { createLink, type Link } from '../../core/domain/Link';
 import { SimulationEventType, type SimulationEvent } from '../../core/events/SimulationEvent';
 import { createPacket } from '../../core/domain/Packet';
 import { Protocol } from '../../core/domain/NetworkTypes';
+import { handleICMP } from '../../core/protocols/ICMP';
 
 interface SimulationStoreState {
   engine: SimulationEngine;
@@ -19,7 +20,7 @@ interface SimulationStoreState {
   initLab: () => void;
   stepForward: () => void;
   reset: () => void;
-  sendTestPacket: () => void;
+  sendPing: (sourceId: string, targetId: string) => void;
   selectPacket: (id: string | null) => void;
 }
 
@@ -38,27 +39,37 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     initLab: () => {
       const newEngine = new SimulationEngine();
       
-      const iface1 = createNetworkInterface('if-host1', '00:00:00:00:00:01', '192.168.1.10');
-      const host1 = createHost('host1', 'PC-1', [iface1]);
-      host1.metadata = { x: 200, y: 300 };
+      const ifaceA = createNetworkInterface('if-hostA', 'AA:AA:AA:AA:AA:AA', '192.168.1.1');
+      const hostA = createHost('hostA', 'Host A', [ifaceA]);
+      hostA.metadata = { x: 200, y: 300 };
 
-      const iface2 = createNetworkInterface('if-router1', '00:00:00:00:00:02', '192.168.1.1');
-      const router1 = createRouter('router1', 'R1', [iface2]);
-      router1.metadata = { x: 600, y: 300 };
+      const ifaceB = createNetworkInterface('if-hostB', 'BB:BB:BB:BB:BB:BB', '192.168.1.2');
+      const hostB = createHost('hostB', 'Host B', [ifaceB]);
+      hostB.metadata = { x: 600, y: 300 };
 
-      const link1 = createLink('link1', 'if-host1', 'if-router1');
+      const link1 = createLink('link1', 'if-hostA', 'if-hostB');
 
-      newEngine.addDevice(host1);
-      newEngine.addDevice(router1);
+      newEngine.addDevice(hostA);
+      newEngine.addDevice(hostB);
       newEngine.addLink(link1);
 
-      // Register Handlers for Phase 6 & 7
+      // Register Handlers for Phase 8
       newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_IN_TRANSIT, (event, eng) => {
         const payload = event.payload;
+        
+        // Find link logic for activePacket coords (simplified)
+        // Assume packet source MAC maps to device
+        let srcId = 'hostA';
+        let dstId = 'hostB';
+        if (payload.packet.sourceMac === 'BB:BB:BB:BB:BB:BB') {
+          srcId = 'hostB';
+          dstId = 'hostA';
+        }
+
         eng.addActivePacket({
           packet: payload.packet,
-          sourceId: 'host1',
-          targetId: 'router1',
+          sourceId: srcId,
+          targetId: dstId,
           progress: 0,
         });
         
@@ -73,7 +84,18 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       });
 
       newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_DELIVERED, (event, eng) => {
-        eng.removeActivePacket(event.payload.packet.id);
+        const packet = event.payload.packet;
+        eng.removeActivePacket(packet.id);
+        
+        // Lookup receiving device by Destination IP
+        const devices = eng.getDevices();
+        const receivingDevice = devices.find(d => 
+          d.interfaces.some(iface => iface.ipAddress === packet.destinationIp)
+        );
+
+        if (receivingDevice && packet.protocol === Protocol.ICMP) {
+          handleICMP(packet, receivingDevice, eng);
+        }
       });
 
       set({ engine: newEngine });
@@ -104,17 +126,27 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       get().initLab();
     },
 
-    sendTestPacket: () => {
+    sendPing: (sourceId: string, targetId: string) => {
       const currentEngine = get().engine;
+      const srcDevice = currentEngine.getDevice(sourceId);
+      const dstDevice = currentEngine.getDevice(targetId);
+
+      if (!srcDevice || !dstDevice) return;
+
+      const srcIface = srcDevice.interfaces[0];
+      const dstIface = dstDevice.interfaces[0];
+
+      if (!srcIface.ipAddress || !dstIface.ipAddress) return;
+
       const pktId = Math.random().toString(36).substring(2, 9);
       const pkt = createPacket(
         `pkt-${pktId}`,
-        '00:00:00:00:00:01',
-        '00:00:00:00:00:02',
-        '192.168.1.10',
-        '192.168.1.1',
+        srcIface.macAddress,
+        dstIface.macAddress, // Phase 8: Assuming ARP is done and MAC is known
+        srcIface.ipAddress,
+        dstIface.ipAddress,
         Protocol.ICMP,
-        { msg: 'hello' }
+        { type: 'ECHO_REQUEST', sequence: 1 }
       );
 
       currentEngine.enqueueEvent({
@@ -122,7 +154,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         timestamp: 0,
         type: SimulationEventType.PACKET_IN_TRANSIT,
         payload: { packet: pkt },
-        explanation: 'Packet transmitted directly via link.'
+        explanation: 'ICMP Echo Request initiated.'
       }, 0);
 
       set({

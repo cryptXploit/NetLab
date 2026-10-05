@@ -32,14 +32,20 @@ describe('EventDispatcher & Replay Foundation', () => {
           payload: { ...event.payload }
         };
         eng.enqueueEvent(receivedEvent, 5);
+        eng.addActivePacket({
+          packet: event.payload.packet,
+          sourceId: 'host1',
+          targetId: 'host2',
+          progress: 0
+        });
       }
     );
 
     // Dummy handler for DELIVERED so it doesn't throw
     engine.getDispatcher().registerHandler(
       SimulationEventType.PACKET_DELIVERED,
-      () => {
-        // No-op for now
+      (event, eng) => {
+        eng.removeActivePacket(event.payload.packet.id);
       }
     );
   });
@@ -65,6 +71,7 @@ describe('EventDispatcher & Replay Foundation', () => {
     // So at T=5, eventHistory has 1 event. EventQueue has 1 event.
     expect(engine.getEventHistory()).toHaveLength(1);
     expect(engine.getEventHistory()[0].id).toBe('transit-1');
+    expect(engine.getActivePackets()).toHaveLength(1);
 
     // Create snapshot at T=5
     const snapshotAt5 = engine.createSnapshot();
@@ -76,6 +83,7 @@ describe('EventDispatcher & Replay Foundation', () => {
     // At T=6, delivered-transit-1 was processed.
     expect(engine.getEventHistory()).toHaveLength(2);
     expect(engine.getEventHistory()[1].id).toBe('delivered-transit-1');
+    expect(engine.getActivePackets()).toHaveLength(0); // Delivered, so removed
 
     // Now restore snapshot back to T=5
     engine.restoreSnapshot(snapshotAt5);
@@ -83,11 +91,13 @@ describe('EventDispatcher & Replay Foundation', () => {
     expect(engine.getCurrentTick()).toBe(5);
     expect(engine.getEventHistory()).toHaveLength(1);
     expect(engine.getEventHistory()[0].id).toBe('transit-1');
+    expect(engine.getActivePackets()).toHaveLength(1);
 
     // If we tick to 10 again, it should re-process the exact same scheduled event
     engine.tick(5);
     expect(engine.getCurrentTick()).toBe(10);
     expect(engine.getEventHistory()).toHaveLength(2);
     expect(engine.getEventHistory()[1].id).toBe('delivered-transit-1');
+    expect(engine.getActivePackets()).toHaveLength(0);
   });
 });

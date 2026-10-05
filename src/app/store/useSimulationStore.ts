@@ -1,9 +1,11 @@
 import { create } from 'zustand';
-import { SimulationEngine } from '../../core/simulation/SimulationEngine';
+import { SimulationEngine, type ActivePacket } from '../../core/simulation/SimulationEngine';
 import { createHost, createRouter, type Device } from '../../core/domain/Device';
 import { createNetworkInterface } from '../../core/domain/NetworkInterface';
 import { createLink, type Link } from '../../core/domain/Link';
-import { type SimulationEvent } from '../../core/events/SimulationEvent';
+import { SimulationEventType, type SimulationEvent } from '../../core/events/SimulationEvent';
+import { createPacket } from '../../core/domain/Packet';
+import { Protocol } from '../../core/domain/NetworkTypes';
 
 interface SimulationStoreState {
   engine: SimulationEngine;
@@ -11,10 +13,12 @@ interface SimulationStoreState {
   links: Link[];
   currentTick: number;
   eventHistory: SimulationEvent[];
+  activePackets: ActivePacket[];
   
   initLab: () => void;
   stepForward: () => void;
   reset: () => void;
+  sendTestPacket: () => void;
 }
 
 export const useSimulationStore = create<SimulationStoreState>((set, get) => {
@@ -26,11 +30,9 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     links: [],
     currentTick: 0,
     eventHistory: [],
+    activePackets: [],
 
     initLab: () => {
-      // Clear existing state by creating a new engine instance if needed, 
-      // but for now we just use the same engine and assume it's fresh.
-      // Wait, there's no `engine.clear()` method, so we instantiate a new one.
       const newEngine = new SimulationEngine();
       
       const iface1 = createNetworkInterface('if-host1', '00:00:00:00:00:01', '192.168.1.10');
@@ -47,15 +49,37 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       newEngine.addDevice(router1);
       newEngine.addLink(link1);
 
+      // Register Handlers for Phase 6
+      newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_IN_TRANSIT, (event, eng) => {
+        const payload = event.payload;
+        eng.addActivePacket({
+          packet: payload.packet,
+          sourceId: 'host1',
+          targetId: 'router1',
+          progress: 0, // In later phases we could track % progress based on ticks
+        });
+        
+        // Enqueue DELIVERED event
+        eng.enqueueEvent({
+          id: `deliver-${event.id}`,
+          timestamp: 0,
+          type: SimulationEventType.PACKET_DELIVERED,
+          payload: { packet: payload.packet }
+        }, 5); // 5 ticks latency
+      });
+
+      newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_DELIVERED, (event, eng) => {
+        eng.removeActivePacket(event.payload.packet.id);
+      });
+
       set({ engine: newEngine });
       
-      // We must call syncState after updating the engine reference 
-      // but since we don't have it locally in this scope without `get().engine`, we use the new one:
       set({
         devices: newEngine.getDevices(),
         links: newEngine.getLinks(),
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
+        activePackets: newEngine.getActivePackets(),
       });
     },
 
@@ -67,12 +91,40 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         links: currentEngine.getLinks(),
         currentTick: currentEngine.getCurrentTick(),
         eventHistory: currentEngine.getEventHistory(),
+        activePackets: currentEngine.getActivePackets(),
       });
     },
 
     reset: () => {
-      // Re-initialize from scratch
       get().initLab();
+    },
+
+    sendTestPacket: () => {
+      const currentEngine = get().engine;
+      const pktId = Math.random().toString(36).substring(2, 9);
+      const pkt = createPacket(
+        `pkt-${pktId}`,
+        '00:00:00:00:00:01',
+        '00:00:00:00:00:02',
+        '192.168.1.10',
+        '192.168.1.1',
+        Protocol.ICMP,
+        { msg: 'hello' }
+      );
+
+      currentEngine.enqueueEvent({
+        id: `send-${pkt.id}`,
+        timestamp: 0,
+        type: SimulationEventType.PACKET_IN_TRANSIT,
+        payload: { packet: pkt }
+      }, 0);
+
+      // Immediately sync state so UI knows about queued event (though activePackets isn't populated until tick)
+      set({
+        currentTick: currentEngine.getCurrentTick(),
+        eventHistory: currentEngine.getEventHistory(),
+        activePackets: currentEngine.getActivePackets(),
+      });
     }
   };
 });

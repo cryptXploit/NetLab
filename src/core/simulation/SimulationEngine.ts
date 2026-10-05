@@ -4,11 +4,21 @@ import { type SimulationEvent } from '../events/SimulationEvent';
 import { EventQueue } from './EventQueue';
 import { EventDispatcher } from './EventDispatcher';
 
+import { type Packet } from '../domain/Packet';
+
+export interface ActivePacket {
+  packet: Packet;
+  sourceId: string;
+  targetId: string;
+  progress: number;
+}
+
 export interface SimulationState {
   devices: Device[];
   links: Link[];
   eventQueue: SimulationEvent[];
   eventHistory: SimulationEvent[];
+  activePackets: ActivePacket[];
   currentTick: number;
 }
 
@@ -18,6 +28,8 @@ export class SimulationEngine {
   
   private eventQueue: EventQueue = new EventQueue();
   private eventHistory: SimulationEvent[] = [];
+  
+  private activePackets: ActivePacket[] = [];
   
   private currentTick: number = 0;
   private dispatcher: EventDispatcher = new EventDispatcher();
@@ -129,6 +141,18 @@ export class SimulationEngine {
     return this.links.get(id);
   }
 
+  public getActivePackets(): ActivePacket[] {
+    return [...this.activePackets];
+  }
+
+  public addActivePacket(ap: ActivePacket): void {
+    this.activePackets.push(ap);
+  }
+
+  public removeActivePacket(packetId: string): void {
+    this.activePackets = this.activePackets.filter((ap) => ap.packet.id !== packetId);
+  }
+
   /**
    * Deep clones the current state of the simulation.
    */
@@ -138,6 +162,7 @@ export class SimulationEngine {
       links: Array.from(this.links.values()),
       eventQueue: this.eventQueue.getEvents(),
       eventHistory: this.eventHistory,
+      activePackets: this.activePackets,
       currentTick: this.currentTick,
     });
   }
@@ -168,6 +193,7 @@ export class SimulationEngine {
     }
 
     this.eventHistory = clonedSnapshot.eventHistory;
+    this.activePackets = clonedSnapshot.activePackets || [];
     this.currentTick = clonedSnapshot.currentTick;
   }
 }

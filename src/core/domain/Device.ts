@@ -1,4 +1,5 @@
 import { type NetworkInterface } from './NetworkInterface';
+import { type Route } from './NetworkTypes';
 
 export const DeviceType = {
   HOST: 'HOST',
@@ -15,6 +16,7 @@ export interface Device {
   interfaces: NetworkInterface[];
   isPoweredOn: boolean;
   metadata?: Record<string, any>;
+  routingTable: Route[];
 }
 
 export interface Host extends Device {
@@ -29,7 +31,6 @@ export interface Switch extends Device {
 
 export interface Router extends Device {
   type: typeof DeviceType.ROUTER;
-  routingTable: any[]; // To be defined more rigorously in later phases
 }
 
 export function createHost(
@@ -45,6 +46,7 @@ export function createHost(
     interfaces,
     defaultGateway,
     isPoweredOn: true,
+    routingTable: [],
   };
 }
 
@@ -60,6 +62,7 @@ export function createSwitch(
     interfaces,
     macTable: {},
     isPoweredOn: true,
+    routingTable: [],
   };
 }
 

@@ -6,6 +6,13 @@ export interface Subnet {
   subnetMask: IPv4Address;
 }
 
+export interface Route {
+  network: IPv4Address;
+  prefix: number;
+  nextHop?: IPv4Address;
+  interfaceId: string;
+}
+
 export const Protocol = {
   TCP: 'TCP',
   UDP: 'UDP',

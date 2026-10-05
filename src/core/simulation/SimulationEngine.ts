@@ -141,6 +141,15 @@ export class SimulationEngine {
     return this.links.get(id);
   }
 
+  public getLinkForInterface(interfaceId: string): Link | undefined {
+    for (const link of this.links.values()) {
+      if (link.interface1Id === interfaceId || link.interface2Id === interfaceId) {
+        return link;
+      }
+    }
+    return undefined;
+  }
+
   public getActivePackets(): ActivePacket[] {
     return [...this.activePackets];
   }

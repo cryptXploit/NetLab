@@ -43,17 +43,17 @@ export const ImportLabModal: React.FC<ImportLabModalProps> = ({ isOpen, onClose 
   };
 
   return (
-    <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[250] backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-zinc-100">Import Topology</h2>
-          <button onClick={onClose} className="text-zinc-500 hover:text-zinc-300">
+    <div className="absolute inset-0 bg-overlay flex items-center justify-center z-[250] backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="bg-base border border-border-base rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-border-base/50 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-primary">Import Topology</h2>
+          <button onClick={onClose} className="text-muted hover:text-secondary">
             <X className="w-5 h-5" />
           </button>
         </div>
         
         <div className="p-6 flex flex-col gap-4">
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-secondary">
             Paste a shared link or raw lab hash to instantly load a custom topology.
           </p>
           
@@ -61,7 +61,7 @@ export const ImportLabModal: React.FC<ImportLabModalProps> = ({ isOpen, onClose 
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="https://netlab.local/?lab=..."
-            className="w-full h-32 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-zinc-300 focus:outline-none focus:border-indigo-500 transition-colors resize-none font-mono break-all"
+            className="w-full h-32 bg-surface border border-border-strong rounded-lg p-3 text-sm text-secondary focus:outline-none focus:border-indigo-500 transition-colors resize-none font-mono break-all"
           />
           
           <button 

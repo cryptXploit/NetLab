@@ -15,8 +15,19 @@ interface SettingsStoreState {
   toggleSettings: () => void;
 }
 
+let mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null;
+
+const applyTheme = (theme: 'dark' | 'light' | 'system') => {
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+};
+
 export const useSettingsStore = create<SettingsStoreState>((set, get) => ({
-  theme: 'dark',
+  theme: 'system',
   language: 'en',
   hapticsEnabled: true,
   isSettingsOpen: false,
@@ -26,7 +37,12 @@ export const useSettingsStore = create<SettingsStoreState>((set, get) => ({
     const savedLang = (await PreferenceService.get('language')) as 'en' | 'bn' | null;
     const savedHaptics = await PreferenceService.get('hapticsEnabled');
 
-    if (savedTheme) get().setTheme(savedTheme);
+    if (savedTheme) {
+      get().setTheme(savedTheme);
+    } else {
+      get().setTheme('system');
+    }
+    
     if (savedLang) get().setLanguage(savedLang);
     if (savedHaptics !== null) get().setHaptics(savedHaptics === 'true');
   },
@@ -34,10 +50,17 @@ export const useSettingsStore = create<SettingsStoreState>((set, get) => ({
   setTheme: (theme) => {
     set({ theme });
     PreferenceService.set('theme', theme);
-    if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    applyTheme(theme);
+    
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mediaQueryListener) {
+      mq.removeEventListener('change', mediaQueryListener);
+    }
+    if (theme === 'system') {
+      mediaQueryListener = () => {
+        applyTheme('system');
+      };
+      mq.addEventListener('change', mediaQueryListener);
     }
   },
 
@@ -57,3 +80,12 @@ export const useSettingsStore = create<SettingsStoreState>((set, get) => ({
     set(state => ({ isSettingsOpen: !state.isSettingsOpen }));
   }
 }));
+
+// Setup initial listener if system is default
+const mq = window.matchMedia('(prefers-color-scheme: dark)');
+mediaQueryListener = () => {
+  if (useSettingsStore.getState().theme === 'system') {
+    applyTheme('system');
+  }
+};
+mq.addEventListener('change', mediaQueryListener);

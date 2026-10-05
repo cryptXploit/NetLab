@@ -48,13 +48,13 @@ export const Terminal: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-14 md:bottom-auto left-0 w-full h-[50dvh] bg-black border-t border-zinc-700 z-[60] flex flex-col font-mono text-sm pointer-events-auto md:absolute md:top-4 md:left-auto md:right-4 md:w-96 md:max-h-[60vh] md:rounded-lg md:border md:shadow-2xl">
+    <div className="fixed bottom-14 md:bottom-auto left-0 w-full h-[50dvh] bg-black border-t border-border-strong z-[60] flex flex-col font-mono text-sm pointer-events-auto md:absolute md:top-4 md:left-auto md:right-4 md:w-96 md:max-h-[60vh] md:rounded-lg md:border md:shadow-2xl">
       {/* Header */}
-      <div className="flex justify-between items-center bg-zinc-800 px-3 py-2 border-b border-zinc-700 select-none">
-        <span className="text-zinc-200 font-bold">{device.name} - Terminal</span>
+      <div className="flex justify-between items-center bg-elevated px-3 py-2 border-b border-border-strong select-none">
+        <span className="text-primary font-bold">{device.name} - Terminal</span>
         <button 
           onClick={() => openTerminal(null)}
-          className="text-zinc-400 hover:text-white transition-colors p-2 text-xl shrink-0"
+          className="text-secondary hover:text-white transition-colors p-2 text-xl shrink-0"
         >
           ✕
         </button>
@@ -63,14 +63,14 @@ export const Terminal: React.FC = () => {
       {/* Body */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-3 text-green-400 whitespace-pre-wrap"
+        className="flex-1 overflow-y-auto p-3 text-success whitespace-pre-wrap"
         onClick={() => inputRef.current?.focus()}
       >
         {history.map((entry, idx) => (
           <div key={idx} className="mb-2">
             {entry.command && (
               <div className="flex">
-                <span className="text-zinc-500 mr-2">{'>'}</span>
+                <span className="text-muted mr-2">{'>'}</span>
                 <span className="text-white">{entry.command}</span>
               </div>
             )}
@@ -82,7 +82,7 @@ export const Terminal: React.FC = () => {
 
         {/* Input Line */}
         <div className="flex items-center mt-2">
-          <span className="text-zinc-500 mr-2">{'>'}</span>
+          <span className="text-muted mr-2">{'>'}</span>
           <input
             ref={inputRef}
             type="text"

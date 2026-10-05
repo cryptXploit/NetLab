@@ -3,7 +3,71 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* LIGHT THEME (Cool-neutral surfaces) */
+    --bg-base: theme('colors.zinc.100');
+    --bg-surface: theme('colors.white');
+    --bg-elevated: theme('colors.zinc.50');
+    --bg-overlay: rgba(255, 255, 255, 0.8);
+    
+    --text-primary: theme('colors.zinc.900');
+    --text-secondary: theme('colors.zinc.600');
+    --text-muted: theme('colors.zinc.400');
+    
+    --border-base: theme('colors.zinc.200');
+    --border-strong: theme('colors.zinc.300');
+    
+    --accent: theme('colors.indigo.600');
+    --accent-hover: theme('colors.indigo.700');
+    --accent-soft: theme('colors.indigo.100');
+    
+    --tech-accent: theme('colors.cyan.600');
+    
+    --success: theme('colors.emerald.600');
+    --warning: theme('colors.amber.600');
+    --danger: theme('colors.rose.600');
+    
+    --link-active: theme('colors.zinc.400');
+    --link-disabled: theme('colors.rose.300');
+    
+    --device-host: theme('colors.indigo.100');
+    --device-switch: theme('colors.zinc.100');
+    --device-router: theme('colors.cyan.100');
+  }
+
+  .dark {
+    /* DARK THEME (Deep charcoal / graphite) */
+    --bg-base: theme('colors.zinc.950');
+    --bg-surface: theme('colors.zinc.900');
+    --bg-elevated: theme('colors.zinc.800');
+    --bg-overlay: rgba(9, 9, 11, 0.8);
+    
+    --text-primary: theme('colors.zinc.100');
+    --text-secondary: theme('colors.zinc.400');
+    --text-muted: theme('colors.zinc.500');
+    
+    --border-base: theme('colors.zinc.800');
+    --border-strong: theme('colors.zinc.700');
+    
+    --accent: theme('colors.indigo.500');
+    --accent-hover: theme('colors.indigo.400');
+    --accent-soft: rgba(99, 102, 241, 0.15); /* indigo-500 with opacity */
+    
+    --tech-accent: theme('colors.cyan.400');
+    
+    --success: theme('colors.emerald.500');
+    --warning: theme('colors.amber.500');
+    --danger: theme('colors.rose.500');
+    
+    --link-active: theme('colors.zinc.600');
+    --link-disabled: theme('colors.rose.800');
+    
+    --device-host: theme('colors.indigo.950');
+    --device-switch: theme('colors.zinc.800');
+    --device-router: theme('colors.cyan.950');
+  }
+
   html, body, #root {
-    @apply h-full w-full m-0 p-0;
+    @apply h-full w-full m-0 p-0 bg-base text-primary font-sans;
   }
 }

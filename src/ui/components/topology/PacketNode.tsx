@@ -37,8 +37,8 @@ export const PacketNode: React.FC<PacketNodeProps> = ({ activePacket, devices })
         e.stopPropagation(); // don't bubble to svg
         selectPacket(activePacket.packet.id);
       }}
-      className={`fill-blue-500 cursor-pointer transition-all ${
-        isSelected ? 'stroke-yellow-400 stroke-4' : 'stroke-blue-200 stroke-[1.5px]'
+      className={`fill-accent cursor-pointer transition-all ${
+        isSelected ? 'stroke-warning stroke-4' : 'stroke-accent-soft stroke-[1.5px]'
       }`}
     />
   );

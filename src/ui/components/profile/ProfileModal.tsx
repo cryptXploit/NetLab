@@ -94,79 +94,79 @@ export const ProfileModal: React.FC = () => {
   const progressPercent = ((totalXp - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel)) * 100;
 
   return (
-    <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[200] backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+    <div className="absolute inset-0 bg-overlay flex items-center justify-center z-[200] backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="bg-base border border-border-base rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-zinc-800/50 flex items-start justify-between relative overflow-hidden">
+        <div className="p-6 pb-4 border-b border-border-base/50 flex items-start justify-between relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
           <div className="flex items-center gap-4 relative z-10">
-            <div className="w-16 h-16 rounded-full bg-zinc-900 border-2 border-indigo-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.4)]">
+            <div className="w-16 h-16 rounded-full bg-surface border-2 border-indigo-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.4)]">
               <Award className="w-8 h-8 text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-zinc-100 tracking-tight">Level {level} Technician</h2>
-              <p className="text-zinc-400 text-sm">Network Operations Center</p>
+              <h2 className="text-2xl font-bold text-primary tracking-tight">Level {level} Technician</h2>
+              <p className="text-secondary text-sm">Network Operations Center</p>
             </div>
           </div>
           <button 
             onClick={toggleProfile}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors bg-zinc-900 p-2 rounded-full"
+            className="text-muted hover:text-secondary transition-colors bg-surface p-2 rounded-full"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Progress Section */}
-        <div className="p-6 bg-zinc-900/30">
+        <div className="p-6 bg-surface/30">
           <div className="flex items-end justify-between mb-2">
-            <span className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Total XP</span>
+            <span className="text-sm font-bold text-secondary uppercase tracking-wider">Total XP</span>
             <div className="text-right">
               <span className="text-xl font-black text-indigo-400">{totalXp}</span>
-              <span className="text-xs text-zinc-500 ml-1">/ {xpForNextLevel}</span>
+              <span className="text-xs text-muted ml-1">/ {xpForNextLevel}</span>
             </div>
           </div>
-          <div className="h-3 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
+          <div className="h-3 w-full bg-surface rounded-full overflow-hidden border border-border-base">
             <div 
               className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-1000 ease-out"
               style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
             ></div>
           </div>
           <div className="text-right mt-1">
-            <span className="text-[10px] text-zinc-500">{xpForNextLevel - totalXp} XP to Level {level + 1}</span>
+            <span className="text-[10px] text-muted">{xpForNextLevel - totalXp} XP to Level {level + 1}</span>
           </div>
         </div>
 
         {/* Breakdown Section */}
-        <div className="p-6 flex flex-col gap-4 border-t border-zinc-800/50">
-          <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2">Topic Mastery</h3>
+        <div className="p-6 flex flex-col gap-4 border-t border-border-base/50">
+          <h3 className="text-sm font-bold text-muted uppercase tracking-wider mb-2">Topic Mastery</h3>
           
-          <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-xl border border-zinc-800/80 hover:border-blue-500/30 transition-colors">
-            <div className="p-3 bg-blue-900/20 text-blue-400 rounded-lg">
+          <div className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-border-base/80 hover:border-blue-500/30 transition-colors">
+            <div className="p-3 bg-blue-900/20 text-accent rounded-lg">
               <Terminal className="w-6 h-6" />
             </div>
             <div className="flex-1">
-              <div className="font-bold text-zinc-200">Subnetting & CIDR</div>
-              <div className="text-xs text-zinc-500">IP Math, Masks, Broadcasts</div>
+              <div className="font-bold text-primary">Subnetting & CIDR</div>
+              <div className="text-xs text-muted">IP Math, Masks, Broadcasts</div>
             </div>
-            <div className="text-lg font-black text-blue-400">{topicMastery.subnetting} <span className="text-xs text-zinc-600 font-normal">XP</span></div>
+            <div className="text-lg font-black text-accent">{topicMastery.subnetting} <span className="text-xs text-muted font-normal">XP</span></div>
           </div>
 
-          <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-xl border border-zinc-800/80 hover:border-orange-500/30 transition-colors">
-            <div className="p-3 bg-orange-900/20 text-orange-400 rounded-lg">
+          <div className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-border-base/80 hover:border-orange-500/30 transition-colors">
+            <div className="p-3 bg-orange-900/20 text-warning rounded-lg">
               <Zap className="w-6 h-6" />
             </div>
             <div className="flex-1">
-              <div className="font-bold text-zinc-200">Troubleshooting</div>
-              <div className="text-xs text-zinc-500">Fault isolation, diagnostics</div>
+              <div className="font-bold text-primary">Troubleshooting</div>
+              <div className="text-xs text-muted">Fault isolation, diagnostics</div>
             </div>
-            <div className="text-lg font-black text-orange-400">{topicMastery.troubleshooting} <span className="text-xs text-zinc-600 font-normal">XP</span></div>
+            <div className="text-lg font-black text-warning">{topicMastery.troubleshooting} <span className="text-xs text-muted font-normal">XP</span></div>
           </div>
         </div>
 
 
         {/* Achievements Section */}
         <div className="p-6 pt-0 flex flex-col gap-3">
-          <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-muted uppercase tracking-wider mb-2 flex items-center gap-2">
             <Award className="w-4 h-4" />
             Achievements
           </h3>
@@ -181,14 +181,14 @@ export const ProfileModal: React.FC = () => {
                   className={`flex flex-col items-center text-center p-3 rounded-xl border transition-all ${
                     isUnlocked 
                       ? 'bg-indigo-900/20 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.1)]' 
-                      : 'bg-zinc-900/30 border-zinc-800/50 opacity-50 grayscale'
+                      : 'bg-surface/30 border-border-base/50 opacity-50 grayscale'
                   }`}
                   title={ach.description}
                 >
-                  <div className={`p-2 rounded-full mb-2 ${isUnlocked ? 'bg-indigo-900/50 text-indigo-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                  <div className={`p-2 rounded-full mb-2 ${isUnlocked ? 'bg-indigo-900/50 text-indigo-400' : 'bg-elevated text-muted'}`}>
                     <IconComponent className="w-5 h-5" />
                   </div>
-                  <div className={`text-xs font-bold leading-tight ${isUnlocked ? 'text-zinc-200' : 'text-zinc-500'}`}>
+                  <div className={`text-xs font-bold leading-tight ${isUnlocked ? 'text-primary' : 'text-muted'}`}>
                     {ach.title}
                   </div>
                 </div>
@@ -199,18 +199,18 @@ export const ProfileModal: React.FC = () => {
 
         {/* Recent Activity Section */}
         <div className="p-6 pt-0 flex flex-col gap-3">
-          <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-1 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-muted uppercase tracking-wider mb-1 flex items-center gap-2">
             <Clock className="w-4 h-4" />
             Recent Activity
           </h3>
           {history.length === 0 ? (
-            <div className="text-zinc-600 text-sm italic">No recent activity.</div>
+            <div className="text-muted text-sm italic">No recent activity.</div>
           ) : (
             <div className="flex flex-col gap-2">
               {history.map((record, idx) => (
-                <div key={record.id || idx} className="flex items-center justify-between bg-zinc-900/50 p-3 rounded-lg border border-zinc-800/50">
-                  <div className="text-sm text-zinc-300">{record.description}</div>
-                  <div className="text-xs font-bold text-green-400">+{record.xpEarned} XP</div>
+                <div key={record.id || idx} className="flex items-center justify-between bg-surface/50 p-3 rounded-lg border border-border-base/50">
+                  <div className="text-sm text-secondary">{record.description}</div>
+                  <div className="text-xs font-bold text-success">+{record.xpEarned} XP</div>
                 </div>
               ))}
             </div>
@@ -218,18 +218,18 @@ export const ProfileModal: React.FC = () => {
         </div>
 
         {/* Data & Backup Section */}
-        <div className="p-6 pt-0 flex flex-col gap-3 border-t border-zinc-800/50 mt-4 pt-4">
+        <div className="p-6 pt-0 flex flex-col gap-3 border-t border-border-base/50 mt-4 pt-4">
           <input
             type="password"
             placeholder="Backup Password (Optional)"
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full bg-surface border border-border-strong rounded-lg px-3 py-2 text-sm text-secondary focus:outline-none focus:border-indigo-500 transition-colors"
             value={backupPassword}
             onChange={(e) => setBackupPassword(e.target.value)}
           />
           <div className="flex justify-between gap-4">
             <button
               onClick={handleExport}
-              className="flex-1 flex items-center justify-center gap-2 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors text-sm font-bold border border-zinc-700"
+              className="flex-1 flex items-center justify-center gap-2 py-2 bg-elevated hover:bg-border-strong text-secondary rounded-lg transition-colors text-sm font-bold border border-border-strong"
             >
               <Download className="w-4 h-4" />
               Export Backup

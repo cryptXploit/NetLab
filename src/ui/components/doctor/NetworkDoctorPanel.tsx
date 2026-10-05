@@ -10,22 +10,22 @@ export const NetworkDoctorPanel: React.FC = () => {
   if (!report) return null;
 
   return (
-    <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[100] backdrop-blur-sm p-4">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
-        <div className={`p-4 flex items-center justify-between border-b ${report.isHealthy ? 'border-green-900/50 bg-green-900/10' : 'border-red-900/50 bg-red-900/10'}`}>
+    <div className="absolute inset-0 bg-overlay flex items-center justify-center z-[100] backdrop-blur-sm p-4">
+      <div className="bg-surface border border-border-base rounded-lg shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+        <div className={`p-4 flex items-center justify-between border-b ${report.isHealthy ? 'border-success/50 bg-success/10' : 'border-danger/50 bg-danger/10'}`}>
           <div className="flex items-center gap-3">
             {report.isHealthy ? (
-              <ShieldCheck className="w-6 h-6 text-green-500" />
+              <ShieldCheck className="w-6 h-6 text-success" />
             ) : (
-              <ShieldAlert className="w-6 h-6 text-red-500" />
+              <ShieldAlert className="w-6 h-6 text-danger" />
             )}
-            <h2 className={`font-bold text-lg ${report.isHealthy ? 'text-green-400' : 'text-red-400'}`}>
+            <h2 className={`font-bold text-lg ${report.isHealthy ? 'text-success' : 'text-danger'}`}>
               {report.isHealthy ? 'NETWORK HEALTHY' : 'NETWORK ANOMALIES DETECTED'}
             </h2>
           </div>
           <button 
             onClick={clearDiagnostics}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-muted hover:text-secondary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -33,18 +33,18 @@ export const NetworkDoctorPanel: React.FC = () => {
 
         <div className="p-6">
           {report.isHealthy ? (
-            <div className="text-zinc-300">
+            <div className="text-secondary">
               <p className="mb-2">All systems nominal.</p>
-              <p className="text-sm text-zinc-500">Physical layer links are UP and routing tables match valid next-hop gateways across all L2 segments.</p>
+              <p className="text-sm text-muted">Physical layer links are UP and routing tables match valid next-hop gateways across all L2 segments.</p>
             </div>
           ) : (
             <div>
-              <p className="text-zinc-300 mb-4">The following issues require your attention:</p>
+              <p className="text-secondary mb-4">The following issues require your attention:</p>
               <ul className="space-y-3">
                 {report.issues.map((issue, idx) => (
-                  <li key={idx} className="flex gap-3 items-start bg-zinc-800/50 p-3 rounded border border-zinc-800">
-                    <span className="text-red-500 font-bold mt-0.5">•</span>
-                    <span className="text-sm text-zinc-300 leading-tight">{issue}</span>
+                  <li key={idx} className="flex gap-3 items-start bg-elevated/50 p-3 rounded border border-border-base">
+                    <span className="text-danger font-bold mt-0.5">•</span>
+                    <span className="text-sm text-secondary leading-tight">{issue}</span>
                   </li>
                 ))}
               </ul>
@@ -52,10 +52,10 @@ export const NetworkDoctorPanel: React.FC = () => {
           )}
         </div>
 
-        <div className="p-4 bg-zinc-950 border-t border-zinc-800 flex justify-end">
+        <div className="p-4 bg-base border-t border-border-base flex justify-end">
           <button 
             onClick={clearDiagnostics}
-            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded transition-colors text-sm font-medium"
+            className="px-4 py-2 bg-elevated hover:bg-border-strong text-primary rounded transition-colors text-sm font-medium"
           >
             Close Diagnostics
           </button>

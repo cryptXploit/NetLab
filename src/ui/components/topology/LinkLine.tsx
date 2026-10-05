@@ -30,8 +30,8 @@ export const LinkLine: React.FC<LinkLineProps> = ({ link, devices }) => {
 
   const isDown = link.status === 'DOWN';
   const lineClass = isDown 
-    ? "stroke-red-500 stroke-2 border-dashed opacity-50"
-    : "stroke-zinc-500 stroke-2";
+    ? "stroke-link-disabled stroke-2 border-dashed opacity-50"
+    : "stroke-link-active stroke-2";
 
   return (
     <line

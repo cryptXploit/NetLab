@@ -33,18 +33,18 @@ export const PracticeView: React.FC = () => {
   if (!activeQuestion) return null;
 
   return (
-    <div className="absolute inset-0 bg-zinc-950 flex flex-col items-center pt-24 pb-8 overflow-y-auto">
+    <div className="absolute inset-0 bg-base flex flex-col items-center pt-24 pb-8 overflow-y-auto">
       {/* Header Stats */}
-      <div className="w-full max-w-2xl flex items-center justify-between px-6 py-4 bg-zinc-900 border border-zinc-800 rounded-xl mb-8">
-        <div className="text-zinc-400 font-medium">Practice Arena</div>
+      <div className="w-full max-w-2xl flex items-center justify-between px-6 py-4 bg-surface border border-border-base rounded-xl mb-8">
+        <div className="text-secondary font-medium">Practice Arena</div>
         <div className="flex items-center gap-6">
           <div className="flex flex-col items-end">
-            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Score</span>
-            <span className="text-xl font-bold text-blue-400">{score}</span>
+            <span className="text-xs text-muted font-bold uppercase tracking-wider">Score</span>
+            <span className="text-xl font-bold text-accent">{score}</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Streak</span>
-            <div className="flex items-center gap-1 text-xl font-bold text-orange-400">
+            <span className="text-xs text-muted font-bold uppercase tracking-wider">Streak</span>
+            <div className="flex items-center gap-1 text-xl font-bold text-warning">
               <Flame className="w-5 h-5" />
               {streak}
             </div>
@@ -53,9 +53,9 @@ export const PracticeView: React.FC = () => {
       </div>
 
       {/* Main Card */}
-      <div className="w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex flex-col">
-        <div className="p-8 pb-6 border-b border-zinc-800/50">
-          <h2 className="text-2xl font-bold text-zinc-100 leading-tight">
+      <div className="w-full max-w-2xl bg-surface border border-border-base rounded-xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="p-8 pb-6 border-b border-border-base/50">
+          <h2 className="text-2xl font-bold text-primary leading-tight">
             {activeQuestion.prompt}
           </h2>
         </div>
@@ -69,12 +69,12 @@ export const PracticeView: React.FC = () => {
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
                 placeholder="e.g. 192.168.1.0"
-                className="w-full bg-zinc-950 border-2 border-zinc-700 hover:border-zinc-600 focus:border-blue-500 rounded-lg px-6 py-4 text-xl font-mono text-zinc-100 outline-none transition-colors"
+                className="w-full bg-base border-2 border-border-strong hover:border-accent focus:border-accent rounded-lg px-6 py-4 text-xl font-mono text-primary outline-none transition-colors"
               />
               <button 
                 type="submit"
                 disabled={!inputValue.trim()}
-                className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-accent hover:bg-accent-hover disabled:bg-elevated disabled:text-muted text-white font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 Submit Answer
               </button>
@@ -84,21 +84,21 @@ export const PracticeView: React.FC = () => {
               <div className={`flex items-start gap-4 p-5 rounded-lg border ${lastResult.correct ? 'bg-green-900/20 border-green-500/30' : 'bg-red-900/20 border-red-500/30'}`}>
                 <div className="mt-1">
                   {lastResult.correct ? (
-                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                    <CheckCircle2 className="w-8 h-8 text-success" />
                   ) : (
-                    <XCircle className="w-8 h-8 text-red-500" />
+                    <XCircle className="w-8 h-8 text-danger" />
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className={`text-xl font-bold mb-1 ${lastResult.correct ? 'text-green-400' : 'text-red-400'}`}>
+                  <h3 className={`text-xl font-bold mb-1 ${lastResult.correct ? 'text-success' : 'text-danger'}`}>
                     {lastResult.correct ? 'Correct!' : 'Incorrect'}
                   </h3>
                   {!lastResult.correct && (
-                    <div className="text-zinc-300 font-mono mb-3 bg-black/40 px-3 py-2 rounded inline-block">
-                      Correct answer: <span className="text-green-400 font-bold">{lastResult.expected}</span>
+                    <div className="text-secondary font-mono mb-3 bg-black/40 px-3 py-2 rounded inline-block">
+                      Correct answer: <span className="text-success font-bold">{lastResult.expected}</span>
                     </div>
                   )}
-                  <p className="text-zinc-400 text-sm leading-relaxed">
+                  <p className="text-secondary text-sm leading-relaxed">
                     {activeQuestion.explanation}
                   </p>
                 </div>
@@ -107,7 +107,7 @@ export const PracticeView: React.FC = () => {
               <button 
                 onClick={handleNext}
                 autoFocus
-                className="w-full bg-zinc-100 hover:bg-white text-zinc-950 font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-primary hover:opacity-90 text-base font-bold py-4 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 Next Question
                 <ArrowRight className="w-5 h-5" />

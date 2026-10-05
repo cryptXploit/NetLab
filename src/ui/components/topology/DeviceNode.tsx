@@ -21,18 +21,18 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
 
   let shape;
   if (device.type === DeviceType.ROUTER) {
-    shape = <circle cx={0} cy={0} r={30} className="fill-zinc-800 stroke-zinc-400 stroke-2" />;
+    shape = <circle cx={0} cy={0} r={30} className="fill-elevated stroke-border-strong stroke-2" />;
   } else if (device.type === DeviceType.SWITCH) {
-    shape = <rect x={-30} y={-20} width={60} height={40} className="fill-zinc-800 stroke-zinc-400 stroke-2" rx={4} />;
+    shape = <rect x={-30} y={-20} width={60} height={40} className="fill-elevated stroke-border-strong stroke-2" rx={4} />;
   } else if (device.type === DeviceType.SERVER) {
-    shape = <rect x={-20} y={-30} width={40} height={60} className="fill-zinc-800 stroke-zinc-400 stroke-2" rx={4} />;
+    shape = <rect x={-20} y={-30} width={40} height={60} className="fill-elevated stroke-border-strong stroke-2" rx={4} />;
   } else {
     // HOST
-    shape = <rect x={-25} y={-25} width={50} height={50} className="fill-zinc-800 stroke-zinc-400 stroke-2" rx={8} />;
+    shape = <rect x={-25} y={-25} width={50} height={50} className="fill-elevated stroke-border-strong stroke-2" rx={8} />;
   }
 
   const isPendingSource = pendingLinkSourceId === device.id;
-  const strokeClass = isPendingSource ? 'stroke-blue-500' : 'stroke-zinc-400';
+  const strokeClass = isPendingSource ? 'stroke-accent' : 'stroke-border-strong';
 
   const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (mode !== 'EDIT') return;
@@ -63,7 +63,7 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
 
   const shapeElement = shape as React.ReactElement<{ className: string }>;
   const clonedShape = React.cloneElement(shapeElement, {
-    className: shapeElement.props.className.replace('stroke-zinc-400', strokeClass)
+    className: shapeElement.props.className.replace('stroke-border-strong', strokeClass)
   });
 
   return (
@@ -86,7 +86,7 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
       <text
         y={45}
         textAnchor="middle"
-        className="fill-zinc-300 text-sm font-semibold pointer-events-none select-none"
+        className="fill-primary text-sm font-semibold pointer-events-none select-none"
       >
         {device.name}
       </text>
@@ -94,7 +94,7 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
         <text
           y={60}
           textAnchor="middle"
-          className="fill-zinc-500 text-[10px] pointer-events-none select-none"
+          className="fill-secondary text-[10px] pointer-events-none select-none"
         >
           (dbl-click for CLI)
         </text>

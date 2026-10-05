@@ -17,7 +17,7 @@ export const TutorialOverlay: React.FC = () => {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="fixed bottom-28 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-[200] md:w-full md:max-w-sm pointer-events-auto"
         >
-          <div className="bg-zinc-900 border-2 border-indigo-500/50 rounded-2xl shadow-[0_20px_50px_rgba(79,70,229,0.2)] p-5 overflow-hidden relative">
+          <div className="bg-surface border-2 border-indigo-500/50 rounded-2xl shadow-[0_20px_50px_rgba(79,70,229,0.2)] p-5 overflow-hidden relative">
             {/* Background glow */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             
@@ -25,12 +25,12 @@ export const TutorialOverlay: React.FC = () => {
               <div className="bg-indigo-900/50 p-2 rounded-lg text-indigo-400">
                 <GraduationCap className="w-5 h-5" />
               </div>
-              <h3 className="font-bold text-zinc-100 text-lg">
+              <h3 className="font-bold text-primary text-lg">
                 {TUTORIAL_STEPS[currentStep].title}
               </h3>
             </div>
             
-            <p className="text-sm text-zinc-400 leading-relaxed mb-6 relative z-10 min-h-[3rem]">
+            <p className="text-sm text-secondary leading-relaxed mb-6 relative z-10 min-h-[3rem]">
               {TUTORIAL_STEPS[currentStep].content}
             </p>
 
@@ -39,7 +39,7 @@ export const TutorialOverlay: React.FC = () => {
                 {TUTORIAL_STEPS.map((_, i) => (
                   <div 
                     key={i} 
-                    className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : 'w-1.5 bg-zinc-700'}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : 'w-1.5 bg-border-strong'}`}
                   />
                 ))}
               </div>
@@ -47,7 +47,7 @@ export const TutorialOverlay: React.FC = () => {
               <div className="flex gap-2">
                 <button
                   onClick={skipTutorial}
-                  className="px-4 py-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="px-4 py-1.5 text-sm font-medium text-muted hover:text-secondary transition-colors"
                 >
                   Skip
                 </button>

@@ -48,7 +48,7 @@ export const TopologyView: React.FC = () => {
           y1={srcDevice.metadata?.y || 0}
           x2={mousePos.x}
           y2={mousePos.y}
-          className="stroke-blue-500 stroke-2 border-dashed opacity-50"
+          className="stroke-accent stroke-2 border-dashed opacity-50"
           strokeDasharray="4 4"
         />
       );
@@ -57,7 +57,7 @@ export const TopologyView: React.FC = () => {
 
   return (
     <div 
-      className="h-full w-full bg-zinc-950 overflow-hidden relative"
+      className="h-full w-full bg-base overflow-hidden relative"
       onClick={handleClick}
     >
       <svg 

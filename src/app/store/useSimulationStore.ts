@@ -17,7 +17,6 @@ import { generateRandomTroubleshootingLab } from '../../core/simulation/Scenario
 import { LabShareService } from '../../core/sharing/LabShareService';
 
 import { useProfileStore } from './useProfileStore';
-import { useWorkspaceStore } from './useWorkspaceStore';
 
 
 
@@ -30,7 +29,7 @@ interface SimulationStoreState {
   activePackets: ActivePacket[];
 
 
-  submitPrediction: (expectedOutcome: 'DELIVERED' | 'DROPPED') => void;
+  submitPrediction: (sourceId: string, targetHostname: string, packetId: string) => void;
 
   loadBasicLab: () => void;
   loadBrokenGatewayLab: () => void;
@@ -242,12 +241,6 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
             payload: { packet },
             explanation: `Physical layer failure: Link or Interface is DOWN.`,
           }, 0);
-          const ws = useWorkspaceStore.getState();
-          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
-            const success = ws.activePrediction.expectedOutcome === 'DROPPED';
-            ws.setPredictionResult({ success, actualOutcome: 'DROPPED', explanation: `Physical layer failure: Link or Interface is DOWN.` });
-            ws.setActivePrediction(null);
-          }
           return;
           // dummy code to replace old return:
         }
@@ -274,12 +267,6 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         const payload = event.payload;
         const packet = payload.packet;
         eng.removeActivePacket(packet.id);
-        const ws = useWorkspaceStore.getState();
-          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
-            const success = ws.activePrediction.expectedOutcome === 'DELIVERED';
-            ws.setPredictionResult({ success, actualOutcome: 'DELIVERED', explanation: event.explanation || 'Packet delivered successfully.' });
-            ws.setActivePrediction(null);
-          }
         
         const receivingDevice = eng.getDevice(payload.receivingDeviceId);
         if (!receivingDevice) return;
@@ -321,12 +308,6 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
                 payload: { packet },
                 explanation: `TTL expired in transit.`,
               }, 0);
-              const ws = useWorkspaceStore.getState();
-          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
-            const success = ws.activePrediction.expectedOutcome === 'DROPPED';
-            ws.setPredictionResult({ success, actualOutcome: 'DROPPED', explanation: `TTL expired in transit.` });
-            ws.setActivePrediction(null);
-          }
               return;
               // dummy code to replace old return:
             }
@@ -344,12 +325,6 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
               payload: { packet },
               explanation: `No route to destination.`,
             }, 0);
-            const ws = useWorkspaceStore.getState();
-          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
-            const success = ws.activePrediction.expectedOutcome === 'DROPPED';
-            ws.setPredictionResult({ success, actualOutcome: 'DROPPED', explanation: `No route to destination.` });
-            ws.setActivePrediction(null);
-          }
           }
         }
       });
@@ -591,21 +566,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       get().loadBasicLab();
     },
 
-    submitPrediction: (expectedOutcome: 'DELIVERED' | 'DROPPED') => {
-      const workspace = useWorkspaceStore.getState();
-      const pending = workspace.pendingPrediction;
-      if (!pending) return;
-      const packetId = Math.random().toString(36).substring(2, 9);
-      workspace.setActivePrediction({ packetId: `pkt-${packetId}`, expectedOutcome });
-      workspace.setPendingPrediction(null);
-
+    submitPrediction: (sourceId: string, targetHostname: string, packetId: string) => {
       const currentEngine = get().engine;
       currentEngine.enqueueEvent({
         id: `intent-${Math.random().toString(36).substring(2, 9)}`,
         timestamp: 0,
         type: SimulationEventType.APP_PING_INTENT,
-        payload: { sourceId: pending.sourceId, targetHostname: pending.targetId, packetId },
-        explanation: `Application requested ping to ${pending.targetId}.`
+        payload: { sourceId, targetHostname, packetId },
+        explanation: `Application requested ping to ${targetHostname}.`
       }, 0);
 
       set({
@@ -615,12 +583,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       });
     },
 
+
     sendPing: (sourceId: string, targetHostname: string) => {
-      const workspace = useWorkspaceStore.getState();
-      if (workspace.isPredictionModeEnabled) {
-        workspace.setPendingPrediction({ sourceId, targetId: targetHostname });
-        return;
-      }
       const currentEngine = get().engine;
       
       useProfileStore.getState().unlockAchievement('FIRST_PING');
@@ -639,6 +603,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         activePackets: currentEngine.getActivePackets(),
       });
     },
+
 
     requestDHCP: (deviceId: string) => {
       const currentEngine = get().engine;
@@ -688,7 +653,6 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       const src = eng.getDevice(sourceId);
       const tgt = eng.getDevice(targetId);
       if (!src || !tgt || sourceId === targetId) {
-        useWorkspaceStore.getState().setPendingLinkSource(null);
         return;
       }
       
@@ -698,8 +662,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       eng.addLink(createLink(linkId, srcIface.id, tgtIface.id));
       
       set({ links: eng.getLinks() });
-      useWorkspaceStore.getState().setPendingLinkSource(null);
     },
+
 
     injectFault: (type: 'LINK_DOWN' | 'BAD_GATEWAY') => {
       const eng = get().engine;

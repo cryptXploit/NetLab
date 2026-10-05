@@ -36,21 +36,21 @@ export const LabLibraryModal: React.FC = () => {
   };
 
   return (
-    <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-[250] backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh]">
-        <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between sticky top-0 bg-zinc-950 z-10">
-          <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+    <div className="absolute inset-0 bg-overlay flex items-center justify-center z-[250] backdrop-blur-sm p-4 animate-in fade-in">
+      <div className="bg-base border border-border-base rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh]">
+        <div className="p-4 border-b border-border-base/50 flex items-center justify-between sticky top-0 bg-base z-10">
+          <h2 className="text-lg font-bold text-primary flex items-center gap-2">
             <Library className="w-5 h-5 text-indigo-400" />
             My Library
           </h2>
-          <button onClick={toggleLibrary} className="text-zinc-500 hover:text-zinc-300">
+          <button onClick={toggleLibrary} className="text-muted hover:text-secondary">
             <X className="w-5 h-5" />
           </button>
         </div>
         
         <div className="p-6 overflow-y-auto flex-1">
           {savedLabs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-zinc-500">
+            <div className="flex flex-col items-center justify-center h-40 text-muted">
               <Library className="w-12 h-12 mb-4 opacity-20" />
               <p>Your library is empty.</p>
               <p className="text-sm">Save a lab to see it here.</p>
@@ -58,10 +58,10 @@ export const LabLibraryModal: React.FC = () => {
           ) : (
             <div className="flex flex-col gap-3">
               {savedLabs.map(lab => (
-                <div key={lab.id} className="flex items-center justify-between bg-zinc-900 border border-zinc-800 p-4 rounded-xl hover:border-zinc-700 transition-colors group">
+                <div key={lab.id} className="flex items-center justify-between bg-surface border border-border-base p-4 rounded-xl hover:border-border-strong transition-colors group">
                   <div className="flex flex-col">
-                    <span className="font-bold text-zinc-200">{lab.name}</span>
-                    <span className="text-xs text-zinc-500">
+                    <span className="font-bold text-primary">{lab.name}</span>
+                    <span className="text-xs text-muted">
                       {new Date(lab.createdAt).toLocaleString()}
                     </span>
                   </div>
@@ -76,7 +76,7 @@ export const LabLibraryModal: React.FC = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(lab.id, lab.name)}
-                      className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                      className="p-1.5 text-muted hover:text-danger hover:bg-red-400/10 rounded-lg transition-colors"
                       title="Delete Lab"
                     >
                       <Trash2 className="w-5 h-5" />

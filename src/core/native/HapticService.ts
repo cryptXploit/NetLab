@@ -6,6 +6,10 @@ export class HapticService {
     return (window as any).NETLAB_HAPTICS_ENABLED !== false;
   }
 
+  static async selection(): Promise<void> { if (!this.isEnabled()) return; try { await Haptics.selectionStart(); } catch(e){} }
+
+  static async heavy(): Promise<void> { if (!this.isEnabled()) return; try { await Haptics.impact({ style: ImpactStyle.Heavy }); } catch(e){} }
+
   static async tap(): Promise<void> {
     if (!this.isEnabled()) return;
     try {

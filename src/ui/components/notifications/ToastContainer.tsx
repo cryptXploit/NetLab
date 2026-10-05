@@ -18,26 +18,26 @@ export const ToastContainer: React.FC = () => {
             className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-2xl border backdrop-blur-md w-80
               ${toast.type === 'success' 
                 ? 'bg-green-950/80 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.15)]' 
-                : 'bg-zinc-900/90 border-zinc-700/50'
+                : 'bg-surface/90 border-border-strong/50'
               }
             `}
           >
             {toast.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-success mt-0.5 shrink-0" />
             ) : (
-              <Info className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
+              <Info className="w-5 h-5 text-accent mt-0.5 shrink-0" />
             )}
             <div className="flex-1">
-              <div className={`font-bold text-sm ${toast.type === 'success' ? 'text-green-300' : 'text-zinc-200'}`}>
+              <div className={`font-bold text-sm ${toast.type === 'success' ? 'text-green-300' : 'text-primary'}`}>
                 {toast.title}
               </div>
-              <div className="text-sm text-zinc-400 mt-1 leading-snug">
+              <div className="text-sm text-secondary mt-1 leading-snug">
                 {toast.message}
               </div>
             </div>
             <button 
               onClick={() => removeToast(toast.id)}
-              className="text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="text-muted hover:text-secondary transition-colors"
             >
               <X className="w-4 h-4" />
             </button>

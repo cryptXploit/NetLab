@@ -48,22 +48,22 @@ export const AppHeader: React.FC = () => {
   };
 
   return (
-    <div className="h-14 md:h-14 bg-zinc-900 border-t md:border-t-0 md:border-b border-zinc-800 flex items-center px-2 md:px-4 gap-2 md:gap-4 select-none w-full shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none">
-      <div className="text-zinc-100 font-bold text-lg hidden md:block">NETLAB</div>
+    <div className="h-14 md:h-14 bg-surface border-t md:border-t-0 md:border-b border-border-base flex items-center px-2 md:px-4 gap-2 md:gap-4 select-none w-full shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none">
+      <div className="text-primary font-bold text-lg hidden md:block">NETLAB</div>
       <div className="flex-1 min-w-0 flex items-center overflow-x-auto whitespace-nowrap hide-scrollbar gap-3 pb-1 pointer-events-auto">
       
       
       {/* Main View Navigation */}
-      <div className="flex bg-zinc-950 rounded border border-zinc-800 p-0.5 mr-4">
+      <div className="flex bg-base rounded border border-border-base p-0.5 mr-4">
         <button
           onClick={() => setView('LAB')}
-          className={`px-4 py-1.5 text-sm rounded font-medium transition-colors ${currentView === 'LAB' ? 'bg-zinc-800 text-zinc-100 shadow' : 'text-zinc-500 hover:text-zinc-300'}`}
+          className={`px-4 py-1.5 text-sm rounded font-medium transition-colors ${currentView === 'LAB' ? 'bg-elevated text-primary shadow' : 'text-muted hover:text-secondary'}`}
         >
           Lab Workspace
         </button>
         <button
           onClick={() => setView('PRACTICE')}
-          className={`px-4 py-1.5 text-sm rounded font-medium transition-colors ${currentView === 'PRACTICE' ? 'bg-zinc-800 text-zinc-100 shadow' : 'text-zinc-500 hover:text-zinc-300'}`}
+          className={`px-4 py-1.5 text-sm rounded font-medium transition-colors ${currentView === 'PRACTICE' ? 'bg-elevated text-primary shadow' : 'text-muted hover:text-secondary'}`}
         >
           Practice Arena
         </button>
@@ -71,7 +71,7 @@ export const AppHeader: React.FC = () => {
 
       <button 
         onClick={loadBasicLab}
-        className="px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition-colors shrink-0"
+        className="px-3 py-1.5 text-sm bg-elevated hover:bg-border-strong text-secondary rounded border border-border-strong transition-colors shrink-0"
       >
         {t('Load Basic Lab')}
       </button>
@@ -82,38 +82,38 @@ export const AppHeader: React.FC = () => {
         <Shuffle className="w-4 h-4" />
         {t('Random Scenario')}
       </button>
-      <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <div className="border-l border-border-strong h-8 mx-2"></div>
       
       <button 
         onClick={togglePredictionMode}
         className={`px-3 py-1.5 text-sm rounded border transition-colors ${
           isPredictionModeEnabled 
             ? 'bg-purple-900/50 border-purple-500/50 text-purple-300' 
-            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-700'
+            : 'bg-elevated border-border-strong text-secondary hover:text-secondary hover:bg-border-strong'
         }`}
       >
         Prediction Mode: {isPredictionModeEnabled ? 'ON' : 'OFF'}
       </button>
 
-      <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <div className="border-l border-border-strong h-8 mx-2"></div>
 
       <button 
         onClick={runDiagnostics}
-        className="px-3 py-1.5 text-sm bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 rounded border border-blue-900/50 transition-colors flex items-center gap-2 shrink-0"
+        className="px-3 py-1.5 text-sm bg-blue-900/30 hover:bg-blue-900/50 text-accent rounded border border-blue-900/50 transition-colors flex items-center gap-2 shrink-0"
       >
         <Stethoscope className="w-4 h-4" />
         {t('Run Doctor')}
       </button>
-      <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <div className="border-l border-border-strong h-8 mx-2"></div>
       <button 
         onClick={() => injectFault('LINK_DOWN')}
-        className="px-3 py-1.5 text-sm bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded border border-red-900/50 transition-colors"
+        className="px-3 py-1.5 text-sm bg-red-900/30 hover:bg-red-900/50 text-danger rounded border border-danger/50 transition-colors"
       >
         Inject Link Cut
       </button>
       <button 
         onClick={() => injectFault('BAD_GATEWAY')}
-        className="px-3 py-1.5 text-sm bg-orange-900/30 hover:bg-orange-900/50 text-orange-400 rounded border border-orange-900/50 transition-colors"
+        className="px-3 py-1.5 text-sm bg-orange-900/30 hover:bg-orange-900/50 text-warning rounded border border-orange-900/50 transition-colors"
       >
         Inject Bad Gateway
       </button>
@@ -122,14 +122,14 @@ export const AppHeader: React.FC = () => {
       
       <button 
         onClick={handleSaveLab}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors shrink-0"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-elevated hover:bg-border-strong text-secondary rounded transition-colors shrink-0"
       >
         <Save className="w-4 h-4" />
         Save Lab
       </button>
       <button 
         onClick={toggleLibrary}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors mr-2 shrink-0"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-elevated hover:bg-border-strong text-secondary rounded transition-colors mr-2 shrink-0"
       >
         <Library className="w-4 h-4" />
         My Library
@@ -137,40 +137,40 @@ export const AppHeader: React.FC = () => {
       
       <button 
         onClick={() => setIsShareOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-elevated hover:bg-border-strong text-secondary rounded transition-colors"
       >
         <Share2 className="w-4 h-4" />
         {t('Share Lab')}
       </button>
       <button 
         onClick={() => setIsImportOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors mr-2"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-elevated hover:bg-border-strong text-secondary rounded transition-colors mr-2"
       >
         <Download className="w-4 h-4" />
         {t('Import Lab')}
       </button>
       
-      <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <div className="border-l border-border-strong h-8 mx-2"></div>
       <button 
         onClick={startTutorial}
-        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors shrink-0"
+        className="flex items-center justify-center p-1.5 text-secondary hover:text-primary hover:bg-elevated rounded transition-colors shrink-0"
       >
         <HelpCircle className="w-5 h-5" />
       </button>
       <button 
         onClick={toggleSettings}
-        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors shrink-0"
+        className="flex items-center justify-center p-1.5 text-secondary hover:text-primary hover:bg-elevated rounded transition-colors shrink-0"
       >
         <Settings className="w-5 h-5" />
       </button>
       <button 
         onClick={toggleProfile}
-        className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors group shrink-0"
+        className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-elevated transition-colors group shrink-0"
       >
         <span className="text-xs font-bold text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded border border-indigo-500/30">
           Lvl {level}
         </span>
-        <User className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200" />
+        <User className="w-5 h-5 text-secondary group-hover:text-primary" />
       </button>
       </div>
       <ShareLabModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />

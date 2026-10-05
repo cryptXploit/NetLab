@@ -49,7 +49,7 @@ function App() {
   }, [isProfileLoaded, startTutorial]);
 
   return (
-    <div className="relative h-[100dvh] w-screen overflow-hidden bg-zinc-950 flex flex-col">
+    <div className="relative h-[100dvh] w-screen overflow-hidden bg-base flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <div className="order-2 md:order-1 w-full shrink-0 z-50">
         <AppHeader />
       </div>

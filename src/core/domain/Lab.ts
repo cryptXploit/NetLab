@@ -1,5 +1,15 @@
 
 
+export type Skill = 
+  | 'FOUNDATIONS'
+  | 'ARP'
+  | 'IPV4'
+  | 'DNS'
+  | 'DHCP'
+  | 'SWITCHING'
+  | 'ROUTING'
+  | 'TROUBLESHOOTING';
+
 export type LabDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 export type LabCategory = 'Foundations' | 'Addressing' | 'Transport' | 'Services' | 'Switching' | 'Routing' | 'Troubleshooting';
 export type PracticeType = 'Prediction' | 'Configuration' | 'Subnetting';
@@ -60,6 +70,7 @@ export interface LabDefinition {
   estimatedTime: number; // minutes
   description: string;
   learningObjectives: string[];
+  skills?: Skill[];
   
   initialStateHash?: string; // If using the stringified hash from ScenarioGenerator
   initialState?: { devices: any[]; links: any[] };

@@ -12,6 +12,7 @@ export const LAB_YOUR_FIRST_NETWORK: LabDefinition = {
   estimatedTime: 5,
   description: 'Learn the basic building blocks of a network by connecting two computers together.',
   learningObjectives: ['Understand devices', 'Understand links', 'Send a packet'],
+  skills: ['FOUNDATIONS'],
   
   initialState: (() => {
     const engine: any = {
@@ -65,6 +66,7 @@ export const LAB_ARP_DISCOVERY: LabDefinition = {
   estimatedTime: 10,
   description: 'Before a packet can be sent, the sender must know the physical (MAC) address of the target. Learn how ARP solves this.',
   learningObjectives: ['Understand ARP Requests', 'Understand ARP Replies', 'Inspect MAC Tables'],
+  skills: ['ARP', 'FOUNDATIONS'],
   
   initialState: (() => {
     const engine: any = {
@@ -114,6 +116,7 @@ export const LAB_SWITCHING_BASICS: LabDefinition = {
   estimatedTime: 10,
   description: 'Switches connect multiple devices on the same network. Watch how they learn MAC addresses and forward packets to the correct port.',
   learningObjectives: ['Understand switches', 'Observe MAC learning', 'Observe broadcast behavior'],
+  skills: ['SWITCHING', 'ARP'],
   
   initialState: (() => {
     const engine: any = {
@@ -180,6 +183,7 @@ export const LAB_DHCP_LEASE: LabDefinition = {
   estimatedTime: 10,
   description: 'DHCP automatically assigns IP addresses to devices. Observe the DORA process (Discover, Offer, Request, Acknowledge).',
   learningObjectives: ['Understand DHCP', 'Observe DORA process', 'Configure a client'],
+  skills: ['DHCP', 'IPV4'],
   
   initialState: (() => {
     const engine: any = {
@@ -233,6 +237,7 @@ export const LAB_DNS_RESOLUTION: LabDefinition = {
   estimatedTime: 10,
   description: 'Computers route by IP addresses, but humans use names (like google.com). Learn how DNS translates names to numbers.',
   learningObjectives: ['Understand DNS', 'Observe DNS Queries'],
+  skills: ['DNS'],
   
   initialState: (() => {
     const engine: any = {

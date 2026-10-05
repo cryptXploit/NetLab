@@ -37,6 +37,7 @@ export function generateWrongGatewayPractice(seed: number): LabDefinition {
     estimatedTime: 10,
     description: `A network technician accidentally misconfigured PC-1. It cannot reach the Server at ${serverIp}. Find and fix the issue.`,
     learningObjectives: ['Verify Default Gateway', 'Understand ARP failures'],
+    skills: ['ROUTING', 'IPV4', 'TROUBLESHOOTING'],
     mode: 'troubleshooting',
     
     initialState: (() => {

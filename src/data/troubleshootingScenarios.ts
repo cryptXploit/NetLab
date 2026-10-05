@@ -12,6 +12,7 @@ export const TRBL_WRONG_GATEWAY: LabDefinition = {
   estimatedTime: 10,
   description: 'PC-1 cannot reach the Server. Use the Terminal to investigate why the packet never leaves the local network.',
   learningObjectives: ['Verify Default Gateway', 'Understand Routing Tables', 'Read ARP Output'],
+  skills: ['ROUTING', 'IPV4', 'TROUBLESHOOTING'],
   mode: 'troubleshooting',
   
   initialState: (() => {
@@ -75,6 +76,7 @@ export const TRBL_MISSING_ROUTE: LabDefinition = {
   estimatedTime: 15,
   description: 'PC-1 can reach the Server, but the Server cannot reply. Use tools to find out where the packet gets dropped.',
   learningObjectives: ['Verify bidirectional routing', 'Inspect Router Tables'],
+  skills: ['ROUTING', 'TROUBLESHOOTING'],
   mode: 'troubleshooting',
   
   initialState: (() => {
@@ -144,6 +146,7 @@ export const TRBL_WRONG_IP: LabDefinition = {
   estimatedTime: 10,
   description: 'PC-2 cannot communicate with PC-1 on the same switch. Diagnose and fix the configuration issue.',
   learningObjectives: ['Verify Subnetting', 'Inspect Interfaces', 'Understand L2 vs L3 boundaries'],
+  skills: ['IPV4', 'SWITCHING', 'TROUBLESHOOTING'],
   mode: 'troubleshooting',
   
   initialState: (() => {
@@ -197,6 +200,7 @@ export const TRBL_LINK_DOWN: LabDefinition = {
   estimatedTime: 5,
   description: 'PC-1 is suddenly completely isolated from the network. Find out why.',
   learningObjectives: ['Check Link Status', 'Verify Interfaces'],
+  skills: ['FOUNDATIONS', 'TROUBLESHOOTING'],
   mode: 'troubleshooting',
   
   initialState: (() => {
@@ -254,6 +258,7 @@ export const TRBL_DNS_FAILURE: LabDefinition = {
   estimatedTime: 10,
   description: 'The Client can ping web servers by their IP addresses, but cannot access them by name. Diagnose the problem.',
   learningObjectives: ['Differentiate IP vs DNS issues', 'Configure DNS Server IP'],
+  skills: ['DNS', 'IPV4', 'TROUBLESHOOTING'],
   mode: 'troubleshooting',
   
   initialState: (() => {
@@ -307,3 +312,11 @@ export const TRBL_DNS_FAILURE: LabDefinition = {
     { id: 'h2', message: 'Open the Client configuration and check its DNS Server IP. Then click on the actual DNS Server to see its true IP address.' }
   ]
 };
+
+export const TROUBLESHOOTING_SCENARIOS = [
+  TRBL_WRONG_GATEWAY,
+  TRBL_MISSING_ROUTE,
+  TRBL_WRONG_IP,
+  TRBL_LINK_DOWN,
+  TRBL_DNS_FAILURE
+];

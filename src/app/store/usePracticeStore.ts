@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { PracticeType } from '../../core/domain/Lab';
+import type { PracticeType, Skill, LabDifficulty } from '../../core/domain/Lab';
 
 export interface PracticeAttempt {
   id: string;
@@ -13,13 +13,15 @@ export interface PracticeAttempt {
   score?: number;
   result?: 'SUCCESS' | 'FAILURE';
   seed?: string; // for generated scenarios
+  skills?: Skill[];
+  difficulty?: LabDifficulty;
 }
 
 interface PracticeState {
   activeAttemptId: string | null;
   history: PracticeAttempt[];
   
-  startPractice: (scenarioId: string, type: PracticeType, seed?: string) => void;
+  startPractice: (scenarioId: string, type: PracticeType, seed?: string, skills?: Skill[], difficulty?: LabDifficulty) => void;
   recordMistake: () => void;
   recordHintUsed: () => void;
   finishPractice: (result: 'SUCCESS' | 'FAILURE', score: number) => void;
@@ -32,7 +34,7 @@ export const usePracticeStore = create<PracticeState>()(
       activeAttemptId: null,
       history: [],
       
-      startPractice: (scenarioId, type, seed) => {
+      startPractice: (scenarioId, type, seed, skills, difficulty) => {
         const attemptId = `prac_${Date.now()}`;
         const attempt: PracticeAttempt = {
           id: attemptId,
@@ -41,7 +43,9 @@ export const usePracticeStore = create<PracticeState>()(
           startTime: Date.now(),
           hintsUsed: 0,
           mistakes: 0,
-          seed
+          seed,
+          skills,
+          difficulty
         };
         
         set((state) => ({

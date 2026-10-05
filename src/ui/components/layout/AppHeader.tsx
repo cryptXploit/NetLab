@@ -4,6 +4,7 @@ import { useSimulationStore } from '../../../app/store/useSimulationStore';
 export const AppHeader: React.FC = () => {
   const loadBasicLab = useSimulationStore(state => state.loadBasicLab);
   const loadBrokenGatewayLab = useSimulationStore(state => state.loadBrokenGatewayLab);
+  const injectFault = useSimulationStore(state => state.injectFault);
 
   return (
     <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-4 select-none z-50 relative">
@@ -19,6 +20,19 @@ export const AppHeader: React.FC = () => {
         className="px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition-colors"
       >
         Load Broken Gateway Lab
+      </button>
+      <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <button 
+        onClick={() => injectFault('LINK_DOWN')}
+        className="px-3 py-1.5 text-sm bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded border border-red-900/50 transition-colors"
+      >
+        Inject Link Cut
+      </button>
+      <button 
+        onClick={() => injectFault('BAD_GATEWAY')}
+        className="px-3 py-1.5 text-sm bg-orange-900/30 hover:bg-orange-900/50 text-orange-400 rounded border border-orange-900/50 transition-colors"
+      >
+        Inject Bad Gateway
       </button>
     </div>
   );

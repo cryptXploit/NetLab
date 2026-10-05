@@ -8,6 +8,7 @@ export interface NetworkInterface {
   subnet?: Subnet;
   connectedLink?: Link;
   isEnabled: boolean;
+  status: 'UP' | 'DOWN';
 }
 
 export function createNetworkInterface(
@@ -22,5 +23,6 @@ export function createNetworkInterface(
     ipAddress,
     subnet,
     isEnabled: true,
+    status: 'UP',
   };
 }

@@ -28,13 +28,19 @@ export const LinkLine: React.FC<LinkLineProps> = ({ link, devices }) => {
   const x2 = targetDevice.metadata?.x ?? 0;
   const y2 = targetDevice.metadata?.y ?? 0;
 
+  const isDown = link.status === 'DOWN';
+  const lineClass = isDown 
+    ? "stroke-red-500 stroke-2 border-dashed opacity-50"
+    : "stroke-zinc-500 stroke-2";
+
   return (
     <line
       x1={x1}
       y1={y1}
       x2={x2}
       y2={y2}
-      className="stroke-zinc-500 stroke-2"
+      className={lineClass}
+      strokeDasharray={isDown ? "4 4" : "none"}
     />
   );
 };

@@ -12,6 +12,7 @@ import { handleDNS, type DNSPayload } from '../../core/protocols/DNS';
 import { handleDHCP, type DHCPPayload } from '../../core/protocols/DHCP';
 import { handleSwitching } from '../../core/protocols/Ethernet';
 import { findLongestPrefixMatch } from '../../core/network/Routing';
+import { injectLinkFailure, injectWrongGateway } from '../../core/simulation/FaultInjector';
 
 interface SimulationStoreState {
   engine: SimulationEngine;
@@ -37,6 +38,7 @@ interface SimulationStoreState {
   selectDeviceForConfig: (id: string | null) => void;
   updateDeviceInterface: (deviceId: string, interfaceId: string, ip: string) => void;
   updateDeviceRoute: (deviceId: string, network: string, prefix: number, nextHop: string) => void;
+  injectFault: (type: 'LINK_DOWN' | 'BAD_GATEWAY') => void;
 
   setMode: (mode: 'SIMULATE' | 'EDIT') => void;
   updateDevicePosition: (id: string, x: number, y: number) => void;
@@ -209,6 +211,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         if (!srcDevice) return;
 
         let targetDeviceId = payload.targetDeviceId;
+        let activeLink = null;
+        let outIface = null;
 
         if (!targetDeviceId) {
           let outboundIfaceId = payload.outboundInterfaceId;
@@ -217,12 +221,25 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
           }
           if (!outboundIfaceId) outboundIfaceId = srcDevice.interfaces[0].id;
 
+          outIface = srcDevice.interfaces.find(i => i.id === outboundIfaceId);
           const link = eng.getLinkForInterface(outboundIfaceId);
           if (link) {
+            activeLink = link;
             const otherIfaceId = link.interface1Id === outboundIfaceId ? link.interface2Id : link.interface1Id;
             const dstDev = getDeviceForInterface(eng, otherIfaceId);
             if (dstDev) targetDeviceId = dstDev.id;
           }
+        }
+
+        if (outIface?.status === 'DOWN' || activeLink?.status === 'DOWN') {
+          eng.enqueueEvent({
+            id: `drop-${packet.id}-${eng.getCurrentTick()}`,
+            timestamp: 0,
+            type: SimulationEventType.PACKET_DROPPED,
+            payload: { packet },
+            explanation: `Physical layer failure: Link or Interface is DOWN.`,
+          }, 0);
+          return;
         }
 
         if (targetDeviceId) {
@@ -595,6 +612,25 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
 
     openTerminal: (deviceId: string | null) => {
       set({ activeTerminalDeviceId: deviceId });
+    },
+
+    injectFault: (type: 'LINK_DOWN' | 'BAD_GATEWAY') => {
+      const eng = get().engine;
+      if (type === 'LINK_DOWN') {
+        const link = eng.getLinks()[0]; // just target the first link for the demo
+        if (link) {
+          injectLinkFailure(eng, link.id);
+        }
+      } else if (type === 'BAD_GATEWAY') {
+        const dev = eng.getDevices().find(d => d.type === 'HOST'); // target first host
+        if (dev) {
+          injectWrongGateway(eng, dev.id, '192.168.1.99');
+        }
+      }
+      set({
+        devices: [...eng.getDevices()],
+        links: [...eng.getLinks()]
+      });
     }
   };
 });

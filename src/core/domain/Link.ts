@@ -4,6 +4,7 @@ export interface Link {
   interface2Id: string;
   isUp: boolean;
   bandwidthMbps: number; // e.g., 100, 1000
+  status: 'UP' | 'DOWN';
 }
 
 export function createLink(
@@ -21,5 +22,6 @@ export function createLink(
     interface2Id,
     isUp: true,
     bandwidthMbps,
+    status: 'UP',
   };
 }

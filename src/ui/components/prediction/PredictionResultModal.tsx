@@ -1,10 +1,11 @@
 import React from 'react';
-import { useSimulationStore } from '../../../app/store/useSimulationStore';
+
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { Award, Frown, X } from 'lucide-react';
 
 export const PredictionResultModal: React.FC = () => {
-  const result = useSimulationStore(state => state.predictionResult);
-  const clearPredictionResult = useSimulationStore(state => state.clearPredictionResult);
+  const result = useWorkspaceStore(state => state.predictionResult);
+  const clearPredictionResult = useWorkspaceStore(state => state.clearPredictionResult);
 
   if (!result) return null;
 

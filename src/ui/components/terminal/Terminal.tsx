@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { executeCommand } from '../../../core/cli/CommandParser';
 
 export const Terminal: React.FC = () => {
-  const activeTerminalDeviceId = useSimulationStore(state => state.activeTerminalDeviceId);
-  const openTerminal = useSimulationStore(state => state.openTerminal);
+  const activeTerminalDeviceId = useWorkspaceStore(state => state.activeTerminalDeviceId);
+  const openTerminal = useWorkspaceStore(state => state.openTerminal);
   const engine = useSimulationStore(state => state.engine);
   const devices = useSimulationStore(state => state.devices);
   

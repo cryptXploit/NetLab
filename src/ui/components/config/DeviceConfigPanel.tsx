@@ -1,10 +1,11 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 
 export const DeviceConfigPanel: React.FC = () => {
-  const mode = useSimulationStore(state => state.mode);
-  const selectedDeviceId = useSimulationStore(state => state.selectedDeviceIdForConfig);
-  const selectDevice = useSimulationStore(state => state.selectDeviceForConfig);
+  const mode = useWorkspaceStore(state => state.mode);
+  const selectedDeviceId = useWorkspaceStore(state => state.selectedDeviceIdForConfig);
+  const selectDevice = useWorkspaceStore(state => state.selectDeviceForConfig);
   const devices = useSimulationStore(state => state.devices);
   const updateDeviceInterface = useSimulationStore(state => state.updateDeviceInterface);
   const updateDeviceRoute = useSimulationStore(state => state.updateDeviceRoute);

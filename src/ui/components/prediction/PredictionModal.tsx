@@ -1,9 +1,10 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
 export const PredictionModal: React.FC = () => {
-  const pending = useSimulationStore(state => state.pendingPrediction);
+  const pending = useWorkspaceStore(state => state.pendingPrediction);
   const submitPrediction = useSimulationStore(state => state.submitPrediction);
 
   if (!pending) return null;

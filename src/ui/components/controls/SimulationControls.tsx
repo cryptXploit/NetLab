@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { HapticService } from '../../../core/native/HapticService';
 import { useTranslation } from 'react-i18next';
 
@@ -11,8 +12,8 @@ export const SimulationControls: React.FC = () => {
   const sendPing = useSimulationStore((state) => state.sendPing);
   const requestDHCP = useSimulationStore((state) => state.requestDHCP);
   
-  const mode = useSimulationStore((state) => state.mode);
-  const setMode = useSimulationStore((state) => state.setMode);
+  const mode = useWorkspaceStore(state => state.mode);
+  const setMode = useWorkspaceStore(state => state.setMode);
   const addDevice = useSimulationStore((state) => state.addDevice);
 
   return (

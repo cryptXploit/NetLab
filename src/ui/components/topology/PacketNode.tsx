@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { type ActivePacket } from '../../../core/simulation/SimulationEngine';
 import { type Device } from '../../../core/domain/Device';
 
-import { useSimulationStore } from '../../../app/store/useSimulationStore';
+
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 
 interface PacketNodeProps {
   activePacket: ActivePacket;
@@ -11,8 +12,8 @@ interface PacketNodeProps {
 }
 
 export const PacketNode: React.FC<PacketNodeProps> = ({ activePacket, devices }) => {
-  const selectedPacketId = useSimulationStore((state) => state.selectedPacketId);
-  const selectPacket = useSimulationStore((state) => state.selectPacket);
+  const selectedPacketId = useWorkspaceStore(state => state.selectedPacketId);
+  const selectPacket = useWorkspaceStore(state => state.selectPacket);
 
   const isSelected = selectedPacketId === activePacket.packet.id;
 

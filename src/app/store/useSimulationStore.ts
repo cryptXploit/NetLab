@@ -17,8 +17,9 @@ import { generateRandomTroubleshootingLab } from '../../core/simulation/Scenario
 import { LabShareService } from '../../core/sharing/LabShareService';
 
 import { useProfileStore } from './useProfileStore';
+import { useWorkspaceStore } from './useWorkspaceStore';
 
-import { type DiagnosticReport, evaluateNetworkHealth } from '../../core/simulation/NetworkDoctor';
+
 
 interface SimulationStoreState {
   engine: SimulationEngine;
@@ -27,24 +28,9 @@ interface SimulationStoreState {
   currentTick: number;
   eventHistory: SimulationEvent[];
   activePackets: ActivePacket[];
-  selectedPacketId: string | null;
-  mode: 'SIMULATE' | 'EDIT';
-  pendingLinkSourceId: string | null;
-  activeTerminalDeviceId: string | null;
-  selectedDeviceIdForConfig: string | null;
-  diagnosticReport: DiagnosticReport | null;
-  isPredictionModeEnabled: boolean;
-  pendingPrediction: { sourceId: string; targetId: string } | null;
-  activePrediction: { packetId: string; expectedOutcome: 'DELIVERED' | 'DROPPED' } | null;
-  predictionResult: { success: boolean; actualOutcome: string; explanation: string } | null;
-  isLabResolved: boolean;
 
-  currentView: 'LAB' | 'PRACTICE';
-  setView: (view: 'LAB' | 'PRACTICE') => void;
 
-  togglePredictionMode: () => void;
   submitPrediction: (expectedOutcome: 'DELIVERED' | 'DROPPED') => void;
-  clearPredictionResult: () => void;
 
   loadBasicLab: () => void;
   loadBrokenGatewayLab: () => void;
@@ -55,20 +41,13 @@ interface SimulationStoreState {
   reset: () => void;
   sendPing: (sourceId: string, targetHostname: string) => void;
   requestDHCP: (deviceId: string) => void;
-  selectPacket: (id: string | null) => void;
-  openTerminal: (deviceId: string | null) => void;
-  selectDeviceForConfig: (id: string | null) => void;
   updateDeviceInterface: (deviceId: string, interfaceId: string, ip: string) => void;
   updateDeviceRoute: (deviceId: string, network: string, prefix: number, nextHop: string) => void;
   injectFault: (type: 'LINK_DOWN' | 'BAD_GATEWAY') => void;
-  runDiagnostics: () => void;
-  clearDiagnostics: () => void;
 
-  setMode: (mode: 'SIMULATE' | 'EDIT') => void;
   updateDevicePosition: (id: string, x: number, y: number) => void;
   addDevice: (type: 'HOST' | 'SWITCH' | 'ROUTER', x: number, y: number) => void;
   addLink: (sourceId: string, targetId: string) => void;
-  setPendingLinkSource: (id: string | null) => void;
 }
 
 export const useSimulationStore = create<SimulationStoreState>((set, get) => {
@@ -263,10 +242,11 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
             payload: { packet },
             explanation: `Physical layer failure: Link or Interface is DOWN.`,
           }, 0);
-          const state = useSimulationStore.getState();
-          if (state.activePrediction && state.activePrediction.packetId === packet.id) {
-            const success = state.activePrediction.expectedOutcome === 'DROPPED';
-            useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DROPPED', explanation: `Physical layer failure: Link or Interface is DOWN.` }, activePrediction: null });
+          const ws = useWorkspaceStore.getState();
+          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
+            const success = ws.activePrediction.expectedOutcome === 'DROPPED';
+            ws.setPredictionResult({ success, actualOutcome: 'DROPPED', explanation: `Physical layer failure: Link or Interface is DOWN.` });
+            ws.setActivePrediction(null);
           }
           return;
           // dummy code to replace old return:
@@ -294,11 +274,12 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         const payload = event.payload;
         const packet = payload.packet;
         eng.removeActivePacket(packet.id);
-        const state = useSimulationStore.getState();
-        if (state.activePrediction && state.activePrediction.packetId === packet.id) {
-          const success = state.activePrediction.expectedOutcome === 'DELIVERED';
-          useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DELIVERED', explanation: event.explanation || 'Packet delivered successfully.' }, activePrediction: null });
-        }
+        const ws = useWorkspaceStore.getState();
+          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
+            const success = ws.activePrediction.expectedOutcome === 'DELIVERED';
+            ws.setPredictionResult({ success, actualOutcome: 'DELIVERED', explanation: event.explanation || 'Packet delivered successfully.' });
+            ws.setActivePrediction(null);
+          }
         
         const receivingDevice = eng.getDevice(payload.receivingDeviceId);
         if (!receivingDevice) return;
@@ -340,11 +321,12 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
                 payload: { packet },
                 explanation: `TTL expired in transit.`,
               }, 0);
-              const state = useSimulationStore.getState();
-              if (state.activePrediction && state.activePrediction.packetId === packet.id) {
-                const success = state.activePrediction.expectedOutcome === 'DROPPED';
-                useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DROPPED', explanation: `TTL expired in transit.` }, activePrediction: null });
-              }
+              const ws = useWorkspaceStore.getState();
+          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
+            const success = ws.activePrediction.expectedOutcome === 'DROPPED';
+            ws.setPredictionResult({ success, actualOutcome: 'DROPPED', explanation: `TTL expired in transit.` });
+            ws.setActivePrediction(null);
+          }
               return;
               // dummy code to replace old return:
             }
@@ -362,11 +344,12 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
               payload: { packet },
               explanation: `No route to destination.`,
             }, 0);
-            const state = useSimulationStore.getState();
-            if (state.activePrediction && state.activePrediction.packetId === packet.id) {
-              const success = state.activePrediction.expectedOutcome === 'DROPPED';
-              useSimulationStore.setState({ predictionResult: { success, actualOutcome: 'DROPPED', explanation: `No route to destination.` }, activePrediction: null });
-            }
+            const ws = useWorkspaceStore.getState();
+          if (ws.activePrediction && ws.activePrediction.packetId === packet.id) {
+            const success = ws.activePrediction.expectedOutcome === 'DROPPED';
+            ws.setPredictionResult({ success, actualOutcome: 'DROPPED', explanation: `No route to destination.` });
+            ws.setActivePrediction(null);
+          }
           }
         }
       });
@@ -381,40 +364,6 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     currentTick: 0,
     eventHistory: [],
     activePackets: [],
-    selectedPacketId: null,
-    mode: 'SIMULATE',
-    pendingLinkSourceId: null,
-    activeTerminalDeviceId: null,
-    selectedDeviceIdForConfig: null,
-    diagnosticReport: null,
-    isPredictionModeEnabled: false,
-    pendingPrediction: null,
-    activePrediction: null,
-    predictionResult: null,
-    isLabResolved: false,
-    currentView: 'LAB',
-
-    setView: (view: 'LAB' | 'PRACTICE') => {
-      set({ currentView: view });
-    },
-
-    runDiagnostics: () => {
-      const eng = get().engine;
-      const report = evaluateNetworkHealth(eng);
-      
-      const { isLabResolved } = get();
-      if (report.isHealthy && !isLabResolved) {
-        useProfileStore.getState().addXp(50, 'troubleshooting', 'Resolved network anomaly');
-        useProfileStore.getState().unlockAchievement('DIAGNOSTIC_EXPERT');
-        set({ diagnosticReport: report, isLabResolved: true });
-      } else {
-        set({ diagnosticReport: report });
-      }
-    },
-
-    clearDiagnostics: () => {
-      set({ diagnosticReport: null });
-    },
 
     loadBasicLab: () => {
       const newEngine = new SimulationEngine();
@@ -496,15 +445,9 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-        selectedPacketId: null,
-        isLabResolved: false,
-      });
+              });
     },
 
-
-    selectDeviceForConfig: (id: string | null) => {
-      set({ selectedDeviceIdForConfig: id });
-    },
 
     updateDeviceInterface: (deviceId: string, interfaceId: string, ip: string) => {
       const eng = get().engine;
@@ -573,9 +516,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-        selectedPacketId: null,
-        isLabResolved: false,
-      });
+              });
     },
 
     restoreSnapshot: (snapshot: any) => {
@@ -590,10 +531,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-        selectedPacketId: null,
-        isLabResolved: false,
-        activePrediction: null,
-        diagnosticReport: null
+
       });
     },
 
@@ -611,10 +549,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
           currentTick: newEngine.getCurrentTick(),
           eventHistory: newEngine.getEventHistory(),
           activePackets: newEngine.getActivePackets(),
-          selectedPacketId: null,
-          isLabResolved: false,
-          activePrediction: null,
-          diagnosticReport: null
+
         });
         return true;
       } catch (err) {
@@ -636,10 +571,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-        selectedPacketId: null,
-        isLabResolved: false,
-        activePrediction: null,
-        diagnosticReport: null
+
       });
     },
 
@@ -659,18 +591,13 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       get().loadBasicLab();
     },
 
-    togglePredictionMode: () => {
-      set({ isPredictionModeEnabled: !get().isPredictionModeEnabled });
-    },
-
     submitPrediction: (expectedOutcome: 'DELIVERED' | 'DROPPED') => {
-      const pending = get().pendingPrediction;
+      const workspace = useWorkspaceStore.getState();
+      const pending = workspace.pendingPrediction;
       if (!pending) return;
       const packetId = Math.random().toString(36).substring(2, 9);
-      set({ 
-        activePrediction: { packetId: `pkt-${packetId}`, expectedOutcome },
-        pendingPrediction: null
-      });
+      workspace.setActivePrediction({ packetId: `pkt-${packetId}`, expectedOutcome });
+      workspace.setPendingPrediction(null);
 
       const currentEngine = get().engine;
       currentEngine.enqueueEvent({
@@ -688,13 +615,10 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       });
     },
 
-    clearPredictionResult: () => {
-      set({ predictionResult: null });
-    },
-
     sendPing: (sourceId: string, targetHostname: string) => {
-      if (get().isPredictionModeEnabled) {
-        set({ pendingPrediction: { sourceId, targetId: targetHostname } });
+      const workspace = useWorkspaceStore.getState();
+      if (workspace.isPredictionModeEnabled) {
+        workspace.setPendingPrediction({ sourceId, targetId: targetHostname });
         return;
       }
       const currentEngine = get().engine;
@@ -734,17 +658,6 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       });
     },
 
-    selectPacket: (id: string | null) => {
-      set({ selectedPacketId: id });
-    },
-
-    setMode: (mode: 'SIMULATE' | 'EDIT') => {
-      if (mode === 'EDIT' && get().currentTick > 0) {
-        get().reset();
-      }
-      set({ mode, pendingLinkSourceId: null });
-    },
-
     updateDevicePosition: (id: string, x: number, y: number) => {
       const eng = get().engine;
       const dev = eng.getDevice(id);
@@ -775,7 +688,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       const src = eng.getDevice(sourceId);
       const tgt = eng.getDevice(targetId);
       if (!src || !tgt || sourceId === targetId) {
-        set({ pendingLinkSourceId: null });
+        useWorkspaceStore.getState().setPendingLinkSource(null);
         return;
       }
       
@@ -784,15 +697,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       const linkId = `link-${Math.random().toString(36).substring(2, 7)}`;
       eng.addLink(createLink(linkId, srcIface.id, tgtIface.id));
       
-      set({ links: eng.getLinks(), pendingLinkSourceId: null });
-    },
-
-    setPendingLinkSource: (id: string | null) => {
-      set({ pendingLinkSourceId: id });
-    },
-
-    openTerminal: (deviceId: string | null) => {
-      set({ activeTerminalDeviceId: deviceId });
+      set({ links: eng.getLinks() });
+      useWorkspaceStore.getState().setPendingLinkSource(null);
     },
 
     injectFault: (type: 'LINK_DOWN' | 'BAD_GATEWAY') => {

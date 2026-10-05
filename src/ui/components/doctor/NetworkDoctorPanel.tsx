@@ -1,10 +1,11 @@
 import React from 'react';
-import { useSimulationStore } from '../../../app/store/useSimulationStore';
+
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { ShieldCheck, ShieldAlert, X } from 'lucide-react';
 
 export const NetworkDoctorPanel: React.FC = () => {
-  const report = useSimulationStore(state => state.diagnosticReport);
-  const clearDiagnostics = useSimulationStore(state => state.clearDiagnostics);
+  const report = useWorkspaceStore(state => state.diagnosticReport);
+  const clearDiagnostics = useWorkspaceStore(state => state.clearDiagnostics);
 
   if (!report) return null;
 

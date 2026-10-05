@@ -1,8 +1,9 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 
 export const PacketInspector: React.FC = () => {
-  const selectedPacketId = useSimulationStore((state) => state.selectedPacketId);
+  const selectedPacketId = useWorkspaceStore(state => state.selectedPacketId);
   const activePackets = useSimulationStore((state) => state.activePackets);
   const eventHistory = useSimulationStore((state) => state.eventHistory);
 

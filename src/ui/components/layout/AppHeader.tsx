@@ -1,5 +1,6 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { Stethoscope, Shuffle, User, Share2, Download, Save, Library } from 'lucide-react';
 import { LibraryService } from '../../../core/persistence/LibraryService';
 import { useLibraryStore } from '../../../app/store/useLibraryStore';
@@ -17,12 +18,12 @@ export const AppHeader: React.FC = () => {
   const loadBasicLab = useSimulationStore(state => state.loadBasicLab);
   const loadRandomScenario = useSimulationStore(state => state.loadRandomScenario);
   const injectFault = useSimulationStore(state => state.injectFault);
-  const runDiagnostics = useSimulationStore(state => state.runDiagnostics);
-  const isPredictionModeEnabled = useSimulationStore(state => state.isPredictionModeEnabled);
-  const togglePredictionMode = useSimulationStore(state => state.togglePredictionMode);
+  const runDiagnostics = useWorkspaceStore(state => state.runDiagnostics);
+  const isPredictionModeEnabled = useWorkspaceStore(state => state.isPredictionModeEnabled);
+  const togglePredictionMode = useWorkspaceStore(state => state.togglePredictionMode);
 
-  const currentView = useSimulationStore(state => state.currentView);
-  const setView = useSimulationStore(state => state.setView);
+  const currentView = useWorkspaceStore(state => state.currentView);
+  const setView = useWorkspaceStore(state => state.setView);
   
   const level = useProfileStore(state => state.level);
   const toggleProfile = useProfileStore(state => state.toggleProfile);

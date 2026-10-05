@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useSimulationStore } from './app/store/useSimulationStore';
+import { useWorkspaceStore } from './app/store/useWorkspaceStore';
 import { TopologyView } from './ui/components/topology/TopologyView';
 import { SimulationControls } from './ui/components/controls/SimulationControls';
 import { PacketInspector } from './ui/components/inspector/PacketInspector';
@@ -25,7 +26,7 @@ import { AppBootService } from './core/native/AppBootService';
 
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
-  const currentView = useSimulationStore((state) => state.currentView);
+  const currentView = useWorkspaceStore(state => state.currentView);
   const initializeProfile = useProfileStore((state) => state.initializeProfile);
   const initializeSettings = useSettingsStore((state) => state.initializeSettings);
   const isProfileLoaded = useProfileStore((state) => state.isLoaded);

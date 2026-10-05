@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { DeviceNode } from './DeviceNode';
 import { LinkLine } from './LinkLine';
 import { PacketNode } from './PacketNode';
@@ -8,12 +9,12 @@ export const TopologyView: React.FC = () => {
   const devices = useSimulationStore((state) => state.devices);
   const links = useSimulationStore((state) => state.links);
   const activePackets = useSimulationStore((state) => state.activePackets);
-  const mode = useSimulationStore((state) => state.mode);
-  const pendingLinkSourceId = useSimulationStore((state) => state.pendingLinkSourceId);
+  const mode = useWorkspaceStore(state => state.mode);
+  const pendingLinkSourceId = useWorkspaceStore(state => state.pendingLinkSourceId);
   
-  const selectPacket = useSimulationStore((state) => state.selectPacket);
-  const setPendingLinkSource = useSimulationStore((state) => state.setPendingLinkSource);
-  const selectDeviceForConfig = useSimulationStore((state) => state.selectDeviceForConfig);
+  const selectPacket = useWorkspaceStore(state => state.selectPacket);
+  const setPendingLinkSource = useWorkspaceStore(state => state.setPendingLinkSource);
+  const selectDeviceForConfig = useWorkspaceStore(state => state.selectDeviceForConfig);
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, type PanInfo } from 'framer-motion';
 import { type Device, DeviceType } from '../../../core/domain/Device';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 
 interface DeviceNodeProps {
   device: Device;
@@ -11,12 +12,12 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
   const x = device.metadata?.x ?? 0;
   const y = device.metadata?.y ?? 0;
 
-  const mode = useSimulationStore((state) => state.mode);
+  const mode = useWorkspaceStore(state => state.mode);
   const updateDevicePosition = useSimulationStore((state) => state.updateDevicePosition);
-  const pendingLinkSourceId = useSimulationStore((state) => state.pendingLinkSourceId);
-  const setPendingLinkSource = useSimulationStore((state) => state.setPendingLinkSource);
+  const pendingLinkSourceId = useWorkspaceStore(state => state.pendingLinkSourceId);
+  const setPendingLinkSource = useWorkspaceStore(state => state.setPendingLinkSource);
   const addLink = useSimulationStore((state) => state.addLink);
-  const selectDeviceForConfig = useSimulationStore((state) => state.selectDeviceForConfig);
+  const selectDeviceForConfig = useWorkspaceStore(state => state.selectDeviceForConfig);
 
   let shape;
   if (device.type === DeviceType.ROUTER) {
@@ -73,7 +74,7 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
       onClick={handleClick}
       onDoubleClick={() => {
         if (mode === 'SIMULATE') {
-          useSimulationStore.getState().openTerminal(device.id);
+          useWorkspaceStore.getState().openTerminal(device.id);
         }
       }}
       initial={{ x, y }}

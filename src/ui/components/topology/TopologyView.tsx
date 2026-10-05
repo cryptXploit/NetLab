@@ -13,6 +13,7 @@ export const TopologyView: React.FC = () => {
   
   const selectPacket = useSimulationStore((state) => state.selectPacket);
   const setPendingLinkSource = useSimulationStore((state) => state.setPendingLinkSource);
+  const selectDeviceForConfig = useSimulationStore((state) => state.selectDeviceForConfig);
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
@@ -32,6 +33,7 @@ export const TopologyView: React.FC = () => {
       selectPacket(null);
     } else {
       setPendingLinkSource(null);
+      selectDeviceForConfig(null);
     }
   };
 

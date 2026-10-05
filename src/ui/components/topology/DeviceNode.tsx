@@ -16,6 +16,7 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
   const pendingLinkSourceId = useSimulationStore((state) => state.pendingLinkSourceId);
   const setPendingLinkSource = useSimulationStore((state) => state.setPendingLinkSource);
   const addLink = useSimulationStore((state) => state.addLink);
+  const selectDeviceForConfig = useSimulationStore((state) => state.selectDeviceForConfig);
 
   let shape;
   if (device.type === DeviceType.ROUTER) {
@@ -44,6 +45,10 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
     if (mode !== 'EDIT') return;
     e.stopPropagation();
 
+    // Select for config
+    selectDeviceForConfig(device.id);
+
+    // Link logic
     if (!pendingLinkSourceId) {
       setPendingLinkSource(device.id);
     } else {

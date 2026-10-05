@@ -4,8 +4,8 @@ import { useSimulationStore } from './useSimulationStore';
 import { SimulationEventType } from '../../core/events/SimulationEvent';
 
 interface WorkspaceStoreState {
-  currentView: 'LAB' | 'PRACTICE';
-  setView: (view: 'LAB' | 'PRACTICE') => void;
+  currentTab: 'home' | 'labs' | 'sandbox' | 'practice' | 'profile';
+  setTab: (tab: 'home' | 'labs' | 'sandbox' | 'practice' | 'profile') => void;
 
   mode: 'SIMULATE' | 'EDIT';
   setMode: (mode: 'SIMULATE' | 'EDIT') => void;
@@ -47,8 +47,8 @@ interface WorkspaceStoreState {
 }
 
 export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
-  currentView: 'LAB',
-  setView: (view) => set({ currentView: view }),
+  currentTab: 'home',
+  setTab: (tab) => set({ currentTab: tab }),
 
   mode: 'SIMULATE',
   setMode: (mode) => set({ mode, pendingLinkSourceId: null }),

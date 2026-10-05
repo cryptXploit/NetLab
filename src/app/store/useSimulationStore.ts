@@ -28,6 +28,14 @@ interface SimulationStoreState {
   eventHistory: SimulationEvent[];
   activePackets: ActivePacket[];
 
+  // Playback
+  isPlaying: boolean;
+  playbackSpeed: number;
+  play: () => void;
+  pause: () => void;
+  setSpeed: (speed: number) => void;
+
+
 
   submitPrediction: (sourceId: string, targetHostname: string, packetId: string) => void;
 
@@ -339,6 +347,9 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     currentTick: 0,
     eventHistory: [],
     activePackets: [],
+  
+  isPlaying: false,
+  playbackSpeed: 1,
 
     loadBasicLab: () => {
       const newEngine = new SimulationEngine();
@@ -550,7 +561,28 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       });
     },
 
-    stepForward: () => {
+    play: () => {
+    if (get().isPlaying) return;
+    set({ isPlaying: true });
+    
+    const loop = () => {
+      if (!get().isPlaying) return;
+      get().stepForward();
+      // Using setTimeout instead of interval for safer state access
+      setTimeout(loop, 1000 / get().playbackSpeed);
+    };
+    loop();
+  },
+  
+  pause: () => {
+    set({ isPlaying: false });
+  },
+  
+  setSpeed: (speed: number) => {
+    set({ playbackSpeed: speed });
+  },
+
+  stepForward: () => {
       const currentEngine = get().engine;
       currentEngine.tick(1);
       set({

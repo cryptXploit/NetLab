@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
 import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { executeCommand } from '../../../core/cli/CommandParser';
+import { X, Terminal as TermIcon, ChevronRight } from 'lucide-react';
+import { DeviceType } from '../../../core/domain/Device';
 
 export const Terminal: React.FC = () => {
   const activeTerminalDeviceId = useWorkspaceStore(state => state.activeTerminalDeviceId);
@@ -17,14 +19,15 @@ export const Terminal: React.FC = () => {
   const device = devices.find(d => d.id === activeTerminalDeviceId);
 
   useEffect(() => {
-    if (activeTerminalDeviceId) {
+    if (activeTerminalDeviceId && device) {
       setHistory([
         {
           command: '',
-          output: [`Connected to ${device?.name || 'Device'} console. Type 'help' for commands.`]
+          output: [`Connected to ${device.name} console. Type 'help' for commands.`]
         }
       ]);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      // Focus after a short delay for mobile Safari/Chrome keyboards
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [activeTerminalDeviceId, device?.name]);
 
@@ -36,64 +39,105 @@ export const Terminal: React.FC = () => {
 
   if (!activeTerminalDeviceId || !device) return null;
 
+  const handleCommand = (cmd: string) => {
+    const trimmed = cmd.trim();
+    if (!trimmed) return;
+    const result = executeCommand(trimmed, activeTerminalDeviceId, engine);
+    setHistory(prev => [...prev, { command: trimmed, output: result }]);
+    setInput('');
+    setTimeout(() => {
+      if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }, 10);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      const trimmed = input.trim();
-      if (!trimmed) return;
-
-      const result = executeCommand(trimmed, activeTerminalDeviceId, engine);
-      setHistory(prev => [...prev, { command: trimmed, output: result }]);
-      setInput('');
+      handleCommand(input);
     }
   };
 
+  const getSuggestions = () => {
+    const common = ['ping', 'help'];
+    if (device.type === DeviceType.ROUTER) {
+      return [...common, 'route', 'arp', 'show ip route'];
+    }
+    if (device.type === DeviceType.SWITCH) {
+      return [...common, 'mac', 'show mac address-table'];
+    }
+    return [...common, 'arp'];
+  };
+
   return (
-    <div className="fixed bottom-14 md:bottom-auto left-0 w-full h-[50dvh] bg-black border-t border-border-strong z-[60] flex flex-col font-mono text-sm pointer-events-auto md:absolute md:top-4 md:left-auto md:right-4 md:w-96 md:max-h-[60vh] md:rounded-lg md:border md:shadow-2xl">
+    <div className="absolute inset-0 md:inset-auto md:bottom-4 md:right-4 md:w-[28rem] md:h-[60vh] bg-zinc-950 md:rounded-2xl md:border border-border-strong z-[70] flex flex-col font-mono text-sm pointer-events-auto shadow-2xl">
+      
       {/* Header */}
-      <div className="flex justify-between items-center bg-elevated px-3 py-2 border-b border-border-strong select-none">
-        <span className="text-primary font-bold">{device.name} - Terminal</span>
+      <div className="flex justify-between items-center bg-zinc-900 px-4 py-3 border-b border-zinc-800 shrink-0 md:rounded-t-2xl">
+        <div className="flex items-center gap-2">
+          <TermIcon className="w-5 h-5 text-tech-accent" />
+          <span className="text-zinc-100 font-bold">{device.name} CLI</span>
+        </div>
         <button 
           onClick={() => openTerminal(null)}
-          className="text-secondary hover:text-white transition-colors p-2 text-xl shrink-0"
+          className="text-zinc-400 hover:text-white transition-colors bg-zinc-800 hover:bg-zinc-700 rounded-full p-1"
         >
-          ✕
+          <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Body */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-3 text-success whitespace-pre-wrap"
-        onClick={() => inputRef.current?.focus()}
+        className="flex-1 overflow-y-auto p-4 space-y-3 pb-24 md:pb-4 text-zinc-300"
       >
         {history.map((entry, idx) => (
-          <div key={idx} className="mb-2">
+          <div key={idx} className="space-y-1">
             {entry.command && (
-              <div className="flex">
-                <span className="text-muted mr-2">{'>'}</span>
-                <span className="text-white">{entry.command}</span>
+              <div className="flex gap-2 text-zinc-400">
+                <span className="text-tech-accent select-none">{device.name}&gt;</span>
+                <span>{entry.command}</span>
               </div>
             )}
-            {entry.output.map((line, lidx) => (
-              <div key={lidx}>{line}</div>
-            ))}
+            <div className="whitespace-pre-wrap break-all text-zinc-200">
+              {entry.output.map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </div>
           </div>
         ))}
+      </div>
 
-        {/* Input Line */}
-        <div className="flex items-center mt-2">
-          <span className="text-muted mr-2">{'>'}</span>
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border-none outline-none text-white focus:ring-0 p-0"
-            autoComplete="off"
-            spellCheck="false"
-          />
-        </div>
+      {/* Suggestion Chips */}
+      <div className="absolute bottom-14 left-0 w-full bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent pt-6 pb-2 px-3 flex gap-2 overflow-x-auto hide-scrollbar shrink-0 pointer-events-auto border-t border-zinc-800/50">
+        {getSuggestions().map(cmd => (
+          <button
+            key={cmd}
+            onClick={() => { handleCommand(cmd); inputRef.current?.focus(); }}
+            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-full text-xs font-medium whitespace-nowrap transition-colors"
+          >
+            {cmd}
+          </button>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="absolute bottom-0 left-0 w-full bg-zinc-900 px-3 py-2 shrink-0 md:rounded-b-2xl pointer-events-auto border-t border-zinc-800 flex items-center">
+        <span className="text-tech-accent font-bold mr-2 select-none flex items-center gap-1">
+          {device.name}
+          <ChevronRight className="w-4 h-4" />
+        </span>
+        <input
+          ref={inputRef}
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="flex-1 bg-transparent text-white outline-none placeholder-zinc-600"
+          placeholder="Enter command..."
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck="false"
+        />
       </div>
     </div>
   );

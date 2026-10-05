@@ -19,8 +19,8 @@ interface WorkspaceStoreState {
   activeTerminalDeviceId: string | null;
   openTerminal: (deviceId: string | null) => void;
 
-  selectedDeviceIdForConfig: string | null;
-  selectDeviceForConfig: (id: string | null) => void;
+  selectedDeviceId: string | null;
+  selectDevice: (id: string | null) => void;
 
   diagnosticReport: DiagnosticReport | null;
   runDiagnostics: () => void;
@@ -62,8 +62,8 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
   activeTerminalDeviceId: null,
   openTerminal: (id) => set({ activeTerminalDeviceId: id }),
 
-  selectedDeviceIdForConfig: null,
-  selectDeviceForConfig: (id) => set({ selectedDeviceIdForConfig: id }),
+  selectedDeviceId: null,
+  selectDevice: (id) => set({ selectedDeviceId: id }),
 
   diagnosticReport: null,
   runDiagnostics: () => {

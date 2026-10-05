@@ -18,6 +18,7 @@ import { ToastContainer } from './ui/components/notifications/ToastContainer';
 import { useProfileStore } from './app/store/useProfileStore';
 import { useSettingsStore } from './app/store/useSettingsStore';
 import { SettingsModal } from './ui/components/settings/SettingsModal';
+import { LabLibraryModal } from './ui/components/library/LabLibraryModal';
 import { AppBootService } from './core/native/AppBootService';
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
       </div>
       <ProfileModal />
       <SettingsModal />
+      <LabLibraryModal />
       <ToastContainer />
     </div>
   );

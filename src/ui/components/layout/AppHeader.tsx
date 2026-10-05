@@ -1,6 +1,9 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
-import { Stethoscope, Shuffle, User, Share2, Download } from 'lucide-react';
+import { Stethoscope, Shuffle, User, Share2, Download, Save, Library } from 'lucide-react';
+import { LibraryService } from '../../../core/persistence/LibraryService';
+import { useLibraryStore } from '../../../app/store/useLibraryStore';
+import { useToastStore } from '../../../app/store/useToastStore';
 import { useState } from 'react';
 import { Settings } from 'lucide-react';
 import { useSettingsStore } from '../../../app/store/useSettingsStore';
@@ -23,9 +26,23 @@ export const AppHeader: React.FC = () => {
   const level = useProfileStore(state => state.level);
   const toggleProfile = useProfileStore(state => state.toggleProfile);
   const toggleSettings = useSettingsStore(state => state.toggleSettings);
+  const toggleLibrary = useLibraryStore(state => state.toggleLibrary);
+  const addToast = useToastStore(state => state.addToast);
+  const engine = useSimulationStore(state => state.engine);
   const { t } = useTranslation();
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+
+  const handleSaveLab = async () => {
+    const name = window.prompt("Enter a name for this lab:");
+    if (!name) return;
+    try {
+      await LibraryService.saveCurrentLab(engine, name);
+      addToast('Lab Saved', `Successfully saved "${name}" to your library.`, 'success');
+    } catch (e) {
+      addToast('Save Failed', 'Failed to save the lab.', 'info');
+    }
+  };
 
   return (
     <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-4 select-none z-50 relative">
@@ -97,6 +114,21 @@ export const AppHeader: React.FC = () => {
       </button>
 
       <div className="flex-1"></div>
+      
+      <button 
+        onClick={handleSaveLab}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors"
+      >
+        <Save className="w-4 h-4" />
+        Save Lab
+      </button>
+      <button 
+        onClick={toggleLibrary}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors mr-2"
+      >
+        <Library className="w-4 h-4" />
+        My Library
+      </button>
       
       <button 
         onClick={() => setIsShareOpen(true)}

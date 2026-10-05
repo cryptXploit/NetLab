@@ -18,6 +18,7 @@ import { ToastContainer } from './ui/components/notifications/ToastContainer';
 import { useProfileStore } from './app/store/useProfileStore';
 import { useSettingsStore } from './app/store/useSettingsStore';
 import { SettingsModal } from './ui/components/settings/SettingsModal';
+import { AppBootService } from './core/native/AppBootService';
 
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
@@ -29,6 +30,7 @@ function App() {
     loadBasicLab();
     initializeProfile();
     initializeSettings();
+    AppBootService.initializeNativeApp();
   }, [loadBasicLab, initializeProfile, initializeSettings]);
 
   return (

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NetLab</string>
+    <string name="title_activity_main">NetLab</string>
+    <string name="package_name">com.cryptxploit.netlab</string>
+    <string name="custom_url_scheme">com.cryptxploit.netlab</string>
+</resources>

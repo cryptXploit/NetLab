@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
 import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
+import { useTimelineStore } from '../../../app/store/useTimelineStore';
 import { HapticService } from '../../../core/native/HapticService';
 import { Play, Square, SkipForward, RotateCcw, FastForward, Plus } from 'lucide-react';
 import { DeviceType } from '../../../core/domain/Device';
@@ -21,6 +22,9 @@ export const SimulationControls: React.FC = () => {
   
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
+
+  const isReplayMode = useTimelineStore(state => state.isReplayMode);
+  if (isReplayMode) return null;
 
   const handlePlayPause = () => {
     HapticService.tap();

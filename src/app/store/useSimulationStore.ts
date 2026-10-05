@@ -25,6 +25,7 @@ interface SimulationStoreState {
   devices: Device[];
   links: Link[];
   currentTick: number;
+  topologyVersion: number;
   eventHistory: SimulationEvent[];
   activePackets: ActivePacket[];
 
@@ -357,6 +358,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     devices: [],
     links: [],
     currentTick: 0,
+      topologyVersion: 0,
     eventHistory: [],
     activePackets: [],
   
@@ -437,13 +439,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
 
       set({ engine: newEngine });
       
-      set({
+      set(state => ({
+        topologyVersion: state.topologyVersion + 1,
         devices: newEngine.getDevices(),
         links: newEngine.getLinks(),
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-              });
+      }));
     },
 
 
@@ -454,7 +457,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         const iface = dev.interfaces.find(i => i.id === interfaceId);
         if (iface) {
           iface.ipAddress = ip;
-          set({ devices: [...eng.getDevices()] });
+          set(state => ({ devices: [...eng.getDevices()], topologyVersion: state.topologyVersion + 1 }));
         }
       }
     },
@@ -466,10 +469,10 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         const route = dev.routingTable.find(r => r.network === network && r.prefix === prefix);
         if (route) {
           route.nextHop = nextHop;
-          set({ devices: [...eng.getDevices()] });
+          set(state => ({ devices: [...eng.getDevices()], topologyVersion: state.topologyVersion + 1 }));
         } else {
           dev.routingTable.push({ network, prefix, nextHop, interfaceId: dev.interfaces[0]?.id || "unknown" });
-          set({ devices: [...eng.getDevices()] });
+          set(state => ({ devices: [...eng.getDevices()], topologyVersion: state.topologyVersion + 1 }));
         }
       }
     },
@@ -508,13 +511,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       registerEngineHandlers(newEngine);
 
       set({ engine: newEngine });
-      set({
+      set(state => ({
+        topologyVersion: state.topologyVersion + 1,
         devices: newEngine.getDevices(),
         links: newEngine.getLinks(),
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-              });
+      }));
     },
 
     restoreSnapshot: (snapshot: any) => { get().pause();
@@ -523,14 +527,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       registerEngineHandlers(newEngine);
 
       set({ engine: newEngine });
-      set({
+      set(state => ({
+        topologyVersion: state.topologyVersion + 1,
         devices: newEngine.getDevices(),
         links: newEngine.getLinks(),
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-
-      });
+      }));
     },
 
     loadSharedLab: (hash: string) => { get().pause();
@@ -541,14 +545,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         registerEngineHandlers(newEngine);
 
         set({ engine: newEngine });
-        set({
-          devices: newEngine.getDevices(),
+        set(state => ({
+        topologyVersion: state.topologyVersion + 1,
+        devices: newEngine.getDevices(),
           links: newEngine.getLinks(),
           currentTick: newEngine.getCurrentTick(),
           eventHistory: newEngine.getEventHistory(),
           activePackets: newEngine.getActivePackets(),
-
-        });
+      }));
         return true;
       } catch (err) {
         console.error(err);
@@ -566,14 +570,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       registerEngineHandlers(newEngine);
 
       set({ engine: newEngine });
-      set({
+      set(state => ({
+        topologyVersion: state.topologyVersion + 1,
         devices: newEngine.getDevices(),
         links: newEngine.getLinks(),
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
-
-      });
+      }));
     },
 
     play: () => {
@@ -679,7 +683,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         if (!dev.metadata) dev.metadata = {};
         dev.metadata.x = x;
         dev.metadata.y = y;
-        set({ devices: [...eng.getDevices()] });
+        set(state => ({ devices: [...eng.getDevices()], topologyVersion: state.topologyVersion + 1 }));
       }
     },
 
@@ -723,7 +727,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       if (!newDevice) return;
       newDevice.metadata = { ...newDevice.metadata, x, y };
       eng.addDevice(newDevice);
-      set({ devices: [...eng.getDevices()] });
+      set(state => ({ devices: [...eng.getDevices()], topologyVersion: state.topologyVersion + 1 }));
     },
     removeDevice: (id: string) => {
       const eng = get().engine;

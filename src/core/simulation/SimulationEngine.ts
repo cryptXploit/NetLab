@@ -120,6 +120,12 @@ export class SimulationEngine {
     while (this.currentTick < targetTick) {
       this.currentTick++;
       
+      // Update deterministic packet progress (5 ticks duration)
+      for (const ap of this.activePackets) {
+        ap.progress += 0.2;
+        if (ap.progress > 1.0) ap.progress = 1.0;
+      }
+      
       const currentEvents = this.eventQueue.dequeueEventsUpTo(this.currentTick);
       
       for (const event of currentEvents) {
@@ -132,8 +138,28 @@ export class SimulationEngine {
     // Record in history before processing so state reflects it
     this.eventHistory.push(event);
     
+    // Memory Management: Bounded Event History
+    if (this.eventHistory.length > 5000) {
+      this.trimEventHistory();
+    }
+    
     // Dispatch to registered handlers
     this.dispatcher.dispatch(event, this);
+  }
+
+  private trimEventHistory(): void {
+    const IMPORTANT_TYPES = ['PACKET_DELIVERED', 'PACKET_DROPPED', 'LINK_STATE_CHANGED', 'DEVICE_POWER_CHANGED'];
+    const KEEP_RECENT = 1000;
+    
+    const recentStart = this.eventHistory.length - KEEP_RECENT;
+    
+    this.eventHistory = this.eventHistory.filter((evt, idx) => {
+      // Keep recent
+      if (idx >= recentStart) return true;
+      // Keep important/terminal events for verification & forensics
+      if (IMPORTANT_TYPES.includes(evt.type)) return true;
+      return false;
+    });
   }
 
   public getCurrentTick(): number {

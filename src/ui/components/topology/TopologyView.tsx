@@ -5,10 +5,49 @@ import { DeviceNode } from './DeviceNode';
 import { LinkLine } from './LinkLine';
 import { PacketNode } from './PacketNode';
 
+const StaticLinks = React.memo(({ }: { version: number }) => {
+  const links = useSimulationStore.getState().links;
+  return (
+    <>
+      {links.map(link => (
+        <LinkLine key={link.id} link={link} />
+      ))}
+    </>
+  );
+});
+
+const StaticDevices = React.memo(({ }: { version: number }) => {
+  const devices = useSimulationStore.getState().devices;
+  return (
+    <>
+      {devices.map(device => (
+        <DeviceNode key={device.id} device={device} />
+      ))}
+    </>
+  );
+});
+
+const ActivePackets = React.memo(() => {
+  const activePackets = useSimulationStore(state => state.activePackets);
+  return (
+    <>
+      {activePackets.map((ap, idx) => (
+        <PacketNode 
+          key={`${ap.packet.id}-${idx}`}
+          packet={ap.packet}
+          sourceId={ap.sourceId}
+          targetId={ap.targetId}
+          progress={ap.progress}
+        />
+      ))}
+    </>
+  );
+});
+
 export const TopologyView: React.FC = () => {
-  const devices = useSimulationStore((state) => state.devices);
-  const links = useSimulationStore((state) => state.links);
-  const activePackets = useSimulationStore((state) => state.activePackets);
+  // Subscribe ONLY to topologyVersion for structural changes
+  const topologyVersion = useSimulationStore(state => state.topologyVersion);
+  
   const mode = useWorkspaceStore(state => state.mode);
   const pendingLinkSourceId = useWorkspaceStore(state => state.pendingLinkSourceId);
   
@@ -37,7 +76,8 @@ export const TopologyView: React.FC = () => {
 
   let pendingLine = null;
   if (mode === 'EDIT' && pendingLinkSourceId) {
-    const srcDevice = devices.find(d => d.id === pendingLinkSourceId);
+    // We just get it from the store synchronously to avoid subscribing
+    const srcDevice = useSimulationStore.getState().devices.find(d => d.id === pendingLinkSourceId);
     if (srcDevice) {
       pendingLine = (
         <line
@@ -54,31 +94,39 @@ export const TopologyView: React.FC = () => {
 
   return (
     <div 
-      className="h-full w-full bg-base overflow-hidden relative"
+      className="w-full h-full relative overflow-hidden bg-base"
       onClick={handleClick}
+      onMouseMove={handleMouseMove}
     >
       <svg 
         ref={svgRef}
-        className="w-full h-full"
-        onMouseMove={handleMouseMove}
+        className="w-full h-full absolute inset-0"
+        style={{ minHeight: '100%', minWidth: '100%' }}
       >
-        {/* Draw Links first so they are behind devices */}
-        {links.map((link) => (
-          <LinkLine key={link.id} link={link} devices={devices} />
-        ))}
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
 
+        {/* Links Layer */}
+        <StaticLinks version={topologyVersion} />
+
+        {/* Pending Line Layer */}
         {pendingLine}
 
-        {/* Draw Packets */}
-        {activePackets.map((ap) => (
-          <PacketNode key={ap.packet.id} activePacket={ap} devices={devices} />
-        ))}
-
-        {/* Draw Devices */}
-        {devices.map((device) => (
-          <DeviceNode key={device.id} device={device} />
-        ))}
+        {/* Packets Layer */}
+        <ActivePackets />
       </svg>
+      
+      {/* HTML Layer for Devices (Allows normal DOM tooltips/interactions) */}
+      <div className="absolute inset-0 pointer-events-none">
+        <StaticDevices version={topologyVersion} />
+      </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { SimulationState } from '../../core/simulation/SimulationEngine';
+import { useWorkspaceStore } from './useWorkspaceStore';
 
 export type TimelineFilter = 'ALL' | 'PACKET' | 'ERROR' | 'IMPORTANT';
 
@@ -36,6 +37,9 @@ export const useTimelineStore = create<TimelineState>()((set) => ({
       maxTick: latest ? latest.currentTick : 0,
       selectedEventId: null
     });
+    if (enabled) {
+      useWorkspaceStore.getState().setMode('SIMULATE');
+    }
   },
 
   setReplayTick: (tick) => set({ replayTick: tick }),

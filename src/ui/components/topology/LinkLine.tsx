@@ -1,13 +1,14 @@
 import React from 'react';
 import { type Link } from '../../../core/domain/Link';
 import { type Device } from '../../../core/domain/Device';
+import { useSimulationStore } from '../../../app/store/useSimulationStore';
 
 interface LinkLineProps {
   link: Link;
-  devices: Device[];
 }
 
-export const LinkLine: React.FC<LinkLineProps> = ({ link, devices }) => {
+export const LinkLine: React.FC<LinkLineProps> = ({ link }) => {
+  const devices = useSimulationStore.getState().devices;
   // Find the devices that own the interfaces in this link
   let sourceDevice: Device | undefined;
   let targetDevice: Device | undefined;

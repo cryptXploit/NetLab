@@ -4,6 +4,8 @@ import { TopologyView } from './ui/components/topology/TopologyView';
 import { SimulationControls } from './ui/components/controls/SimulationControls';
 import { PacketInspector } from './ui/components/inspector/PacketInspector';
 
+import { Terminal } from './ui/components/terminal/Terminal';
+
 function App() {
   const initLab = useSimulationStore((state) => state.initLab);
 
@@ -16,6 +18,7 @@ function App() {
       <TopologyView />
       <SimulationControls />
       <PacketInspector />
+      <Terminal />
     </div>
   );
 }

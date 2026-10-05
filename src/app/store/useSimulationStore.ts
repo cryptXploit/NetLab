@@ -23,6 +23,7 @@ interface SimulationStoreState {
   selectedPacketId: string | null;
   mode: 'SIMULATE' | 'EDIT';
   pendingLinkSourceId: string | null;
+  activeTerminalDeviceId: string | null;
 
   initLab: () => void;
   stepForward: () => void;
@@ -30,6 +31,7 @@ interface SimulationStoreState {
   sendPing: (sourceId: string, targetHostname: string) => void;
   requestDHCP: (deviceId: string) => void;
   selectPacket: (id: string | null) => void;
+  openTerminal: (deviceId: string | null) => void;
 
   setMode: (mode: 'SIMULATE' | 'EDIT') => void;
   updateDevicePosition: (id: string, x: number, y: number) => void;
@@ -119,6 +121,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     selectedPacketId: null,
     mode: 'SIMULATE',
     pendingLinkSourceId: null,
+    activeTerminalDeviceId: null,
 
     initLab: () => {
       const newEngine = new SimulationEngine();
@@ -499,6 +502,10 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
 
     setPendingLinkSource: (id: string | null) => {
       set({ pendingLinkSourceId: id });
+    },
+
+    openTerminal: (deviceId: string | null) => {
+      set({ activeTerminalDeviceId: deviceId });
     }
   };
 });

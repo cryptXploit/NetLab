@@ -66,6 +66,11 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
       dragMomentum={false}
       onDragEnd={handleDragEnd}
       onClick={handleClick}
+      onDoubleClick={() => {
+        if (mode === 'SIMULATE') {
+          useSimulationStore.getState().openTerminal(device.id);
+        }
+      }}
       initial={{ x, y }}
       animate={{ x, y }}
       transition={{ duration: 0 }}
@@ -79,6 +84,15 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
       >
         {device.name}
       </text>
+      {mode === 'SIMULATE' && (
+        <text
+          y={60}
+          textAnchor="middle"
+          className="fill-zinc-500 text-[10px] pointer-events-none select-none"
+        >
+          (dbl-click for CLI)
+        </text>
+      )}
     </motion.g>
   );
 };

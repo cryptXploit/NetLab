@@ -1,5 +1,6 @@
 import { type NetworkInterface } from './NetworkInterface';
 import { type Route } from './NetworkTypes';
+import { type Packet } from './Packet';
 
 export const DeviceType = {
   HOST: 'HOST',
@@ -17,6 +18,9 @@ export interface Device {
   isPoweredOn: boolean;
   metadata?: Record<string, any>;
   routingTable: Route[];
+  arpTable: Record<string, string>;
+  arpQueue: Packet[];
+  macTable: Record<string, string>; // Used mainly by Switches
 }
 
 export interface Host extends Device {
@@ -26,7 +30,6 @@ export interface Host extends Device {
 
 export interface Switch extends Device {
   type: typeof DeviceType.SWITCH;
-  macTable: Record<string, string>; // MAC address to Interface ID
 }
 
 export interface Router extends Device {
@@ -47,6 +50,9 @@ export function createHost(
     defaultGateway,
     isPoweredOn: true,
     routingTable: [],
+    arpTable: {},
+    arpQueue: [],
+    macTable: {},
   };
 }
 
@@ -60,9 +66,11 @@ export function createSwitch(
     name,
     type: DeviceType.SWITCH,
     interfaces,
-    macTable: {},
     isPoweredOn: true,
     routingTable: [],
+    arpTable: {},
+    arpQueue: [],
+    macTable: {},
   };
 }
 
@@ -76,7 +84,10 @@ export function createRouter(
     name,
     type: DeviceType.ROUTER,
     interfaces,
-    routingTable: [],
     isPoweredOn: true,
+    routingTable: [],
+    arpTable: {},
+    arpQueue: [],
+    macTable: {},
   };
 }

@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { SimulationEngine, type ActivePacket } from '../../core/simulation/SimulationEngine';
-import { createHost, createRouter, type Device } from '../../core/domain/Device';
+import { createHost, createRouter, createSwitch, type Device } from '../../core/domain/Device';
 import { createNetworkInterface } from '../../core/domain/NetworkInterface';
 import { createLink, type Link } from '../../core/domain/Link';
 import { SimulationEventType, type SimulationEvent } from '../../core/events/SimulationEvent';
-import { createPacket } from '../../core/domain/Packet';
+import { createPacket, type Packet } from '../../core/domain/Packet';
 import { Protocol } from '../../core/domain/NetworkTypes';
 import { handleICMP } from '../../core/protocols/ICMP';
+import { handleARP, type ARPPayload } from '../../core/protocols/ARP';
+import { handleSwitching } from '../../core/protocols/Ethernet';
 import { findLongestPrefixMatch } from '../../core/network/Routing';
 
 interface SimulationStoreState {
@@ -28,18 +30,72 @@ interface SimulationStoreState {
 export const useSimulationStore = create<SimulationStoreState>((set, get) => {
   const engine = new SimulationEngine();
 
-  // Helper to find MAC address of connected interface (bypassing ARP for now)
-  const getNextHopMac = (eng: SimulationEngine, outIfaceId: string): string => {
-    const link = eng.getLinkForInterface(outIfaceId);
-    if (!link) return 'FF:FF:FF:FF:FF:FF';
-    const otherIfaceId = link.interface1Id === outIfaceId ? link.interface2Id : link.interface1Id;
-    
-    for (const dev of eng.getDevices()) {
-      for (const iface of dev.interfaces) {
-        if (iface.id === otherIfaceId) return iface.macAddress;
+  const getLinkBetween = (eng: SimulationEngine, devAId: string, devBId: string): Link | undefined => {
+    const devA = eng.getDevice(devAId);
+    const devB = eng.getDevice(devBId);
+    if (!devA || !devB) return undefined;
+
+    for (const link of eng.getLinks()) {
+      const isA1 = devA.interfaces.some(i => i.id === link.interface1Id);
+      const isA2 = devA.interfaces.some(i => i.id === link.interface2Id);
+      const isB1 = devB.interfaces.some(i => i.id === link.interface1Id);
+      const isB2 = devB.interfaces.some(i => i.id === link.interface2Id);
+      
+      if ((isA1 && isB2) || (isA2 && isB1)) {
+        return link;
       }
     }
-    return 'FF:FF:FF:FF:FF:FF';
+    return undefined;
+  };
+
+  const getDeviceForInterface = (eng: SimulationEngine, ifaceId: string): Device | undefined => {
+    return eng.getDevices().find(d => d.interfaces.some(i => i.id === ifaceId));
+  };
+
+  const transmitOrARP = (eng: SimulationEngine, srcDevice: Device, packet: Packet, nextHopIp: string) => {
+    const knownMac = srcDevice.arpTable[nextHopIp];
+    
+    if (knownMac) {
+      packet.destinationMac = knownMac;
+      eng.enqueueEvent({
+        id: `send-${packet.id}-${eng.getCurrentTick()}`,
+        timestamp: 0,
+        type: SimulationEventType.PACKET_IN_TRANSIT,
+        payload: { packet, sourceDeviceId: srcDevice.id },
+        explanation: `Routed/Sent directly (MAC known: ${knownMac}).`
+      }, 0);
+    } else {
+      srcDevice.arpQueue.push(packet);
+
+      const route = findLongestPrefixMatch(nextHopIp, srcDevice.routingTable);
+      const outIface = srcDevice.interfaces.find(i => i.id === route?.interfaceId) || srcDevice.interfaces[0];
+
+      const arpReqId = `arp-req-${Math.random().toString(36).substring(2, 9)}`;
+      const arpPayload: ARPPayload = {
+        type: 'ARP_REQUEST',
+        targetIp: nextHopIp,
+        senderIp: outIface.ipAddress || '',
+        senderMac: outIface.macAddress,
+      };
+
+      const arpPacket = createPacket(
+        arpReqId,
+        outIface.macAddress,
+        'FF:FF:FF:FF:FF:FF',
+        outIface.ipAddress || '',
+        nextHopIp,
+        Protocol.ARP,
+        arpPayload
+      );
+
+      eng.enqueueEvent({
+        id: `send-${arpReqId}-${eng.getCurrentTick()}`,
+        timestamp: 0,
+        type: SimulationEventType.PACKET_IN_TRANSIT,
+        payload: { packet: arpPacket, sourceDeviceId: srcDevice.id },
+        explanation: `ARP Request broadcasted for ${nextHopIp}.`
+      }, 0);
+    }
   };
 
   return {
@@ -57,12 +113,17 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       const ifaceA = createNetworkInterface('if-hostA', 'AA:AA:AA:AA:AA:AA', '192.168.1.10');
       const hostA = createHost('hostA', 'Host A', [ifaceA]);
       hostA.metadata = { x: 100, y: 200 };
-      hostA.routingTable = [{ network: '0.0.0.0', prefix: 0, interfaceId: 'if-hostA' }];
+      hostA.routingTable = [{ network: '0.0.0.0', prefix: 0, nextHop: '192.168.1.1', interfaceId: 'if-hostA' }];
+
+      const ifaceS1_1 = createNetworkInterface('if-S1-1', 'S1:S1:S1:S1:S1:01', '');
+      const ifaceS1_2 = createNetworkInterface('if-S1-2', 'S1:S1:S1:S1:S1:02', '');
+      const switch1 = createSwitch('switch1', 'S1', [ifaceS1_1, ifaceS1_2]);
+      switch1.metadata = { x: 300, y: 200 };
 
       const ifaceR1_1 = createNetworkInterface('if-R1-1', 'R1:R1:R1:R1:R1:01', '192.168.1.1');
       const ifaceR1_2 = createNetworkInterface('if-R1-2', 'R1:R1:R1:R1:R1:02', '10.0.0.1');
       const router1 = createRouter('router1', 'R1', [ifaceR1_1, ifaceR1_2]);
-      router1.metadata = { x: 400, y: 200 };
+      router1.metadata = { x: 500, y: 200 };
       router1.routingTable = [
         { network: '192.168.1.0', prefix: 24, interfaceId: 'if-R1-1' },
         { network: '10.0.0.0', prefix: 24, interfaceId: 'if-R1-2' }
@@ -71,92 +132,111 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       const ifaceB = createNetworkInterface('if-hostB', 'BB:BB:BB:BB:BB:BB', '10.0.0.10');
       const hostB = createHost('hostB', 'Host B', [ifaceB]);
       hostB.metadata = { x: 700, y: 200 };
-      hostB.routingTable = [{ network: '0.0.0.0', prefix: 0, interfaceId: 'if-hostB' }];
+      hostB.routingTable = [{ network: '0.0.0.0', prefix: 0, nextHop: '10.0.0.1', interfaceId: 'if-hostB' }];
 
-      const link1 = createLink('link1', 'if-hostA', 'if-R1-1');
-      const link2 = createLink('link2', 'if-R1-2', 'if-hostB');
+      const link1 = createLink('link1', 'if-hostA', 'if-S1-1');
+      const link2 = createLink('link2', 'if-S1-2', 'if-R1-1');
+      const link3 = createLink('link3', 'if-R1-2', 'if-hostB');
 
       newEngine.addDevice(hostA);
+      newEngine.addDevice(switch1);
       newEngine.addDevice(router1);
       newEngine.addDevice(hostB);
       newEngine.addLink(link1);
       newEngine.addLink(link2);
+      newEngine.addLink(link3);
 
-      // Register Handlers for Phase 10
       newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_IN_TRANSIT, (event, eng) => {
         const payload = event.payload;
-        
-        // Find source and target devices by looking up the link based on packet source MAC
-        // Wait, for activePackets animation we need the UI nodes.
-        let srcDevice = eng.getDevices().find(d => d.interfaces.some(i => i.macAddress === payload.packet.sourceMac));
-        let dstDevice = eng.getDevices().find(d => d.interfaces.some(i => i.macAddress === payload.packet.destinationMac));
-        
-        if (srcDevice && dstDevice) {
+        const packet = payload.packet;
+        const srcDeviceId = payload.sourceDeviceId;
+
+        if (!srcDeviceId) return;
+        const srcDevice = eng.getDevice(srcDeviceId);
+        if (!srcDevice) return;
+
+        let targetDeviceId = payload.targetDeviceId;
+
+        if (!targetDeviceId) {
+          let outboundIfaceId = payload.outboundInterfaceId;
+          if (!outboundIfaceId) {
+            outboundIfaceId = srcDevice.interfaces.find(i => i.macAddress === packet.sourceMac)?.id;
+          }
+          if (!outboundIfaceId) outboundIfaceId = srcDevice.interfaces[0].id;
+
+          const link = eng.getLinkForInterface(outboundIfaceId);
+          if (link) {
+            const otherIfaceId = link.interface1Id === outboundIfaceId ? link.interface2Id : link.interface1Id;
+            const dstDev = getDeviceForInterface(eng, otherIfaceId);
+            if (dstDev) targetDeviceId = dstDev.id;
+          }
+        }
+
+        if (targetDeviceId) {
           eng.addActivePacket({
-            packet: payload.packet,
-            sourceId: srcDevice.id,
-            targetId: dstDevice.id,
+            packet,
+            sourceId: srcDeviceId,
+            targetId: targetDeviceId,
             progress: 0,
           });
+
+          eng.enqueueEvent({
+            id: `deliver-${packet.id}-${Math.random().toString(36).substring(2,7)}`,
+            timestamp: 0,
+            type: SimulationEventType.PACKET_DELIVERED,
+            payload: { packet, receivingDeviceId: targetDeviceId, inboundDeviceId: srcDeviceId },
+            explanation: `Packet arrived at ${targetDeviceId}.`,
+          }, 5);
         }
-        
-        eng.enqueueEvent({
-          id: `deliver-${event.id}`,
-          timestamp: 0,
-          type: SimulationEventType.PACKET_DELIVERED,
-          payload: { packet: payload.packet },
-          explanation: `Packet arrived at destination MAC ${payload.packet.destinationMac} after traversing link.`,
-        }, 5);
       });
 
       newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_DELIVERED, (event, eng) => {
-        const packet = event.payload.packet;
+        const payload = event.payload;
+        const packet = payload.packet;
         eng.removeActivePacket(packet.id);
         
-        // Lookup receiving device by Destination MAC
-        const receivingDevice = eng.getDevices().find(d => 
-          d.interfaces.some(iface => iface.macAddress === packet.destinationMac)
-        );
-
+        const receivingDevice = eng.getDevice(payload.receivingDeviceId);
         if (!receivingDevice) return;
 
-        const isForMe = receivingDevice.interfaces.some(iface => iface.ipAddress === packet.destinationIp);
+        if (receivingDevice.type === 'SWITCH') {
+          const inboundLink = getLinkBetween(eng, payload.inboundDeviceId, receivingDevice.id);
+          if (inboundLink) {
+            const inboundIfaceId = receivingDevice.interfaces.find(i => i.id === inboundLink.interface1Id || i.id === inboundLink.interface2Id)?.id;
+            if (inboundIfaceId) {
+              handleSwitching(packet, receivingDevice as any, inboundIfaceId, eng);
+            }
+          }
+          return;
+        }
+
+        const isForMe = receivingDevice.interfaces.some(iface => iface.ipAddress === packet.destinationIp || packet.destinationMac === 'FF:FF:FF:FF:FF:FF');
 
         if (isForMe) {
-          if (packet.protocol === Protocol.ICMP) {
+          if (packet.protocol === Protocol.ARP) {
+            handleARP(packet, receivingDevice, eng);
+          } else if (packet.protocol === Protocol.ICMP && receivingDevice.interfaces.some(i => i.ipAddress === packet.destinationIp)) {
             handleICMP(packet, receivingDevice, eng);
           }
         } else if (receivingDevice.type === 'ROUTER') {
-          // Routing
           const route = findLongestPrefixMatch(packet.destinationIp, receivingDevice.routingTable);
           if (route) {
-            const outLink = eng.getLinkForInterface(route.interfaceId);
-            if (outLink) {
-              const nextHopMac = getNextHopMac(eng, route.interfaceId);
-              // Update MACs for next hop
-              packet.sourceMac = receivingDevice.interfaces.find(i => i.id === route.interfaceId)?.macAddress || packet.sourceMac;
-              packet.destinationMac = nextHopMac;
-              packet.ttl -= 1;
-              
-              if (packet.ttl <= 0) {
-                eng.enqueueEvent({
-                  id: `drop-${packet.id}-${eng.getCurrentTick()}`,
-                  timestamp: 0,
-                  type: SimulationEventType.PACKET_DROPPED,
-                  payload: { packet },
-                  explanation: `TTL expired in transit.`,
-                }, 0);
-                return;
-              }
-
+            packet.ttl -= 1;
+            if (packet.ttl <= 0) {
               eng.enqueueEvent({
-                id: `route-${packet.id}-${eng.getCurrentTick()}`,
+                id: `drop-${packet.id}-${eng.getCurrentTick()}`,
                 timestamp: 0,
-                type: SimulationEventType.PACKET_IN_TRANSIT,
+                type: SimulationEventType.PACKET_DROPPED,
                 payload: { packet },
-                explanation: `Routed via LPM: ${route.network}/${route.prefix}`,
-              }, 1);
+                explanation: `TTL expired in transit.`,
+              }, 0);
+              return;
             }
+
+            const nextHopIp = route.nextHop || packet.destinationIp;
+            const outIface = receivingDevice.interfaces.find(i => i.id === route.interfaceId) || receivingDevice.interfaces[0];
+            packet.sourceMac = outIface.macAddress;
+
+            transmitOrARP(eng, receivingDevice, packet, nextHopIp);
           } else {
             eng.enqueueEvent({
               id: `drop-${packet.id}-${eng.getCurrentTick()}`,
@@ -215,26 +295,19 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         return;
       }
 
-      const nextHopMac = getNextHopMac(currentEngine, route.interfaceId);
-
       const pktId = Math.random().toString(36).substring(2, 9);
       const pkt = createPacket(
         `pkt-${pktId}`,
         srcIface.macAddress,
-        nextHopMac,
+        'FF:FF:FF:FF:FF:FF',
         srcIface.ipAddress,
         dstIface.ipAddress,
         Protocol.ICMP,
         { type: 'ECHO_REQUEST', sequence: 1 }
       );
 
-      currentEngine.enqueueEvent({
-        id: `send-${pkt.id}`,
-        timestamp: 0,
-        type: SimulationEventType.PACKET_IN_TRANSIT,
-        payload: { packet: pkt },
-        explanation: 'ICMP Echo Request initiated.'
-      }, 0);
+      const nextHopIp = route.nextHop || dstIface.ipAddress;
+      transmitOrARP(currentEngine, srcDevice, pkt, nextHopIp);
 
       set({
         currentTick: currentEngine.getCurrentTick(),

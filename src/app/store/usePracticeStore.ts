@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { type PracticeQuestion, generateQuestion } from '../../core/practice/QuestionGenerators';
+import { useProfileStore } from './useProfileStore';
 
 interface PracticeStoreState {
   activeQuestion: PracticeQuestion | null;
@@ -32,6 +33,10 @@ export const usePracticeStore = create<PracticeStoreState>((set, get) => ({
     const normalizedExpected = activeQuestion.correctAnswer.trim().toLowerCase();
 
     const isCorrect = normalizedInput === normalizedExpected;
+
+    if (isCorrect) {
+      useProfileStore.getState().addXp(10, 'subnetting');
+    }
 
     set({
       score: isCorrect ? score + 10 : score,

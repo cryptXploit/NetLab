@@ -15,6 +15,8 @@ import { findLongestPrefixMatch } from '../../core/network/Routing';
 import { injectLinkFailure, injectWrongGateway } from '../../core/simulation/FaultInjector';
 import { generateRandomTroubleshootingLab } from '../../core/simulation/ScenarioGenerator';
 
+import { useProfileStore } from './useProfileStore';
+
 import { type DiagnosticReport, evaluateNetworkHealth } from '../../core/simulation/NetworkDoctor';
 
 interface SimulationStoreState {
@@ -34,6 +36,7 @@ interface SimulationStoreState {
   pendingPrediction: { sourceId: string; targetId: string } | null;
   activePrediction: { packetId: string; expectedOutcome: 'DELIVERED' | 'DROPPED' } | null;
   predictionResult: { success: boolean; actualOutcome: string; explanation: string } | null;
+  isLabResolved: boolean;
 
   currentView: 'LAB' | 'PRACTICE';
   setView: (view: 'LAB' | 'PRACTICE') => void;
@@ -385,6 +388,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     pendingPrediction: null,
     activePrediction: null,
     predictionResult: null,
+    isLabResolved: false,
     currentView: 'LAB',
 
     setView: (view: 'LAB' | 'PRACTICE') => {
@@ -394,7 +398,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     runDiagnostics: () => {
       const eng = get().engine;
       const report = evaluateNetworkHealth(eng);
-      set({ diagnosticReport: report });
+      
+      const { isLabResolved } = get();
+      if (report.isHealthy && !isLabResolved) {
+        useProfileStore.getState().addXp(50, 'troubleshooting');
+        set({ diagnosticReport: report, isLabResolved: true });
+      } else {
+        set({ diagnosticReport: report });
+      }
     },
 
     clearDiagnostics: () => {
@@ -482,6 +493,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
         selectedPacketId: null,
+        isLabResolved: false,
       });
     },
 
@@ -558,6 +570,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
         selectedPacketId: null,
+        isLabResolved: false,
       });
     },
 
@@ -575,6 +588,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
         selectedPacketId: null,
+        isLabResolved: false,
         activePrediction: null,
         diagnosticReport: null
       });

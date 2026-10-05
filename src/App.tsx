@@ -12,6 +12,8 @@ import { PredictionResultModal } from './ui/components/prediction/PredictionResu
 
 import { PracticeView } from './ui/components/practice/PracticeView';
 
+import { ProfileModal } from './ui/components/profile/ProfileModal';
+
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
   const currentView = useSimulationStore((state) => state.currentView);
@@ -39,6 +41,7 @@ function App() {
           <PracticeView />
         )}
       </div>
+      <ProfileModal />
     </div>
   );
 }

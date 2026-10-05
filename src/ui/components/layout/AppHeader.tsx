@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
-import { Stethoscope, Shuffle } from 'lucide-react';
+import { Stethoscope, Shuffle, User } from 'lucide-react';
+import { useProfileStore } from '../../../app/store/useProfileStore';
 
 export const AppHeader: React.FC = () => {
   const loadBasicLab = useSimulationStore(state => state.loadBasicLab);
@@ -12,6 +13,9 @@ export const AppHeader: React.FC = () => {
 
   const currentView = useSimulationStore(state => state.currentView);
   const setView = useSimulationStore(state => state.setView);
+  
+  const level = useProfileStore(state => state.level);
+  const toggleProfile = useProfileStore(state => state.toggleProfile);
 
   return (
     <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-4 select-none z-50 relative">
@@ -80,6 +84,19 @@ export const AppHeader: React.FC = () => {
         className="px-3 py-1.5 text-sm bg-orange-900/30 hover:bg-orange-900/50 text-orange-400 rounded border border-orange-900/50 transition-colors"
       >
         Inject Bad Gateway
+      </button>
+
+      <div className="flex-1"></div>
+      
+      <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <button 
+        onClick={toggleProfile}
+        className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors group"
+      >
+        <span className="text-xs font-bold text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded border border-indigo-500/30">
+          Lvl {level}
+        </span>
+        <User className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200" />
       </button>
     </div>
   );

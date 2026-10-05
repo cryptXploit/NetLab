@@ -47,9 +47,9 @@ export const AppHeader: React.FC = () => {
   };
 
   return (
-    <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-2 md:px-4 gap-2 md:gap-4 select-none z-50 relative w-full overflow-hidden">
+    <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-2 md:px-4 gap-2 md:gap-4 select-none z-50 relative w-full">
       <div className="text-zinc-100 font-bold text-lg hidden md:block">NETLAB</div>
-      <div className="flex items-center overflow-x-auto whitespace-nowrap hide-scrollbar gap-3 w-full pb-1 pointer-events-auto">
+      <div className="flex-1 min-w-0 flex items-center overflow-x-auto whitespace-nowrap hide-scrollbar gap-3 pb-1 pointer-events-auto">
       
       
       {/* Main View Navigation */}
@@ -117,7 +117,7 @@ export const AppHeader: React.FC = () => {
         Inject Bad Gateway
       </button>
 
-      </div>
+      <div className="flex-1 hidden md:block shrink-0 min-w-8"></div>
       
       <button 
         onClick={handleSaveLab}
@@ -171,6 +171,7 @@ export const AppHeader: React.FC = () => {
         </span>
         <User className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200" />
       </button>
+      </div>
       <ShareLabModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
       <ImportLabModal isOpen={isImportOpen} onClose={() => setIsImportOpen(false)} />
     </div>

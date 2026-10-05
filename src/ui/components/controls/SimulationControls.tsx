@@ -16,7 +16,7 @@ export const SimulationControls: React.FC = () => {
   const addDevice = useSimulationStore((state) => state.addDevice);
 
   return (
-    <div className="fixed bottom-0 left-0 w-full md:absolute md:bottom-6 md:left-1/2 md:-translate-x-1/2 bg-zinc-900 border-t md:border border-zinc-700 md:rounded-xl p-3 md:p-4 shadow-2xl flex flex-col items-center gap-3 text-zinc-200 z-30 pointer-events-auto">
+    <div className="absolute bottom-0 left-0 w-full md:bottom-6 md:left-1/2 md:-translate-x-1/2 bg-zinc-900 border-t md:border border-zinc-700 md:rounded-xl p-3 md:p-4 shadow-2xl flex flex-col items-center gap-3 text-zinc-200 z-30 pointer-events-auto">
       
       {/* Mode Toggle */}
       <div className="flex bg-zinc-800 rounded-lg p-1">

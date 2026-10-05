@@ -49,8 +49,10 @@ function App() {
 
   return (
     <div className="relative h-[100dvh] w-screen overflow-hidden bg-zinc-950 flex flex-col">
-      <AppHeader />
-      <div className="flex-1 relative w-full h-full overflow-hidden">
+      <div className="order-2 md:order-1 w-full shrink-0 z-50">
+        <AppHeader />
+      </div>
+      <div className="flex-1 relative w-full h-full overflow-hidden order-1 md:order-2 z-0">
         {currentView === 'LAB' ? (
           <>
             <TopologyView />

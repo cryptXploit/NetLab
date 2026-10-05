@@ -47,7 +47,7 @@ export const Terminal: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 w-full h-[50dvh] bg-black border-t border-zinc-700 z-[60] flex flex-col font-mono text-sm pointer-events-auto md:absolute md:top-4 md:bottom-auto md:left-auto md:right-4 md:w-96 md:max-h-[60vh] md:rounded-lg md:border md:shadow-2xl">
+    <div className="fixed bottom-14 md:bottom-auto left-0 w-full h-[50dvh] bg-black border-t border-zinc-700 z-[60] flex flex-col font-mono text-sm pointer-events-auto md:absolute md:top-4 md:left-auto md:right-4 md:w-96 md:max-h-[60vh] md:rounded-lg md:border md:shadow-2xl">
       {/* Header */}
       <div className="flex justify-between items-center bg-zinc-800 px-3 py-2 border-b border-zinc-700 select-none">
         <span className="text-zinc-200 font-bold">{device.name} - Terminal</span>

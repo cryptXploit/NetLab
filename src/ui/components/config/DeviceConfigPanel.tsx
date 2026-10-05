@@ -15,7 +15,7 @@ export const DeviceConfigPanel: React.FC = () => {
   if (!device) return null;
 
   return (
-    <div className="fixed inset-0 top-14 bg-zinc-950/95 backdrop-blur z-[60] overflow-y-auto flex flex-col md:absolute md:inset-auto md:right-0 md:top-0 md:bottom-0 md:w-80 md:bg-zinc-900 md:border-l md:border-zinc-800 text-zinc-200 pointer-events-auto">
+    <div className="fixed inset-0 bottom-14 md:bottom-0 bg-zinc-950/95 backdrop-blur z-[60] overflow-y-auto flex flex-col md:absolute md:inset-auto md:right-0 md:top-0 md:w-80 md:bg-zinc-900 md:border-l md:border-zinc-800 text-zinc-200 pointer-events-auto">
       <div className="flex justify-between items-center p-4 border-b border-zinc-800 shrink-0 sticky top-0 bg-zinc-900 z-10">
         <h2 className="text-lg font-semibold">{device.name} Config</h2>
         <button 

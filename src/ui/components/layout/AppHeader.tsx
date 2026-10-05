@@ -47,7 +47,7 @@ export const AppHeader: React.FC = () => {
   };
 
   return (
-    <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-2 md:px-4 gap-2 md:gap-4 select-none z-50 relative w-full">
+    <div className="h-14 md:h-14 bg-zinc-900 border-t md:border-t-0 md:border-b border-zinc-800 flex items-center px-2 md:px-4 gap-2 md:gap-4 select-none w-full shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-none">
       <div className="text-zinc-100 font-bold text-lg hidden md:block">NETLAB</div>
       <div className="flex-1 min-w-0 flex items-center overflow-x-auto whitespace-nowrap hide-scrollbar gap-3 pb-1 pointer-events-auto">
       

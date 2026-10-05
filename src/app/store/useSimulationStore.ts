@@ -21,13 +21,21 @@ interface SimulationStoreState {
   eventHistory: SimulationEvent[];
   activePackets: ActivePacket[];
   selectedPacketId: string | null;
-  
+  mode: 'SIMULATE' | 'EDIT';
+  pendingLinkSourceId: string | null;
+
   initLab: () => void;
   stepForward: () => void;
   reset: () => void;
   sendPing: (sourceId: string, targetHostname: string) => void;
   requestDHCP: (deviceId: string) => void;
   selectPacket: (id: string | null) => void;
+
+  setMode: (mode: 'SIMULATE' | 'EDIT') => void;
+  updateDevicePosition: (id: string, x: number, y: number) => void;
+  addDevice: (type: 'HOST' | 'SWITCH' | 'ROUTER', x: number, y: number) => void;
+  addLink: (sourceId: string, targetId: string) => void;
+  setPendingLinkSource: (id: string | null) => void;
 }
 
 export const useSimulationStore = create<SimulationStoreState>((set, get) => {
@@ -109,6 +117,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     eventHistory: [],
     activePackets: [],
     selectedPacketId: null,
+    mode: 'SIMULATE',
+    pendingLinkSourceId: null,
 
     initLab: () => {
       const newEngine = new SimulationEngine();
@@ -436,6 +446,59 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
 
     selectPacket: (id: string | null) => {
       set({ selectedPacketId: id });
+    },
+
+    setMode: (mode: 'SIMULATE' | 'EDIT') => {
+      if (mode === 'EDIT' && get().currentTick > 0) {
+        get().reset();
+      }
+      set({ mode, pendingLinkSourceId: null });
+    },
+
+    updateDevicePosition: (id: string, x: number, y: number) => {
+      const eng = get().engine;
+      const dev = eng.getDevice(id);
+      if (dev) {
+        if (!dev.metadata) dev.metadata = {};
+        dev.metadata.x = x;
+        dev.metadata.y = y;
+        set({ devices: eng.getDevices() });
+      }
+    },
+
+    addDevice: (type: 'HOST' | 'SWITCH' | 'ROUTER', x: number, y: number) => {
+      const eng = get().engine;
+      const id = `${type.toLowerCase()}-${Math.random().toString(36).substring(2, 7)}`;
+      const iface = createNetworkInterface(`if-${id}-1`, `M:${id.substring(0,4)}`, '0.0.0.0');
+      let newDevice;
+      if (type === 'HOST') newDevice = createHost(id, `New ${type}`, [iface]);
+      else if (type === 'SWITCH') newDevice = createSwitch(id, `New ${type}`, [iface, createNetworkInterface(`if-${id}-2`, `M:${id.substring(0,4)}2`, '')]);
+      else newDevice = createRouter(id, `New ${type}`, [iface]);
+
+      newDevice.metadata = { x, y };
+      eng.addDevice(newDevice);
+      set({ devices: eng.getDevices() });
+    },
+
+    addLink: (sourceId: string, targetId: string) => {
+      const eng = get().engine;
+      const src = eng.getDevice(sourceId);
+      const tgt = eng.getDevice(targetId);
+      if (!src || !tgt || sourceId === targetId) {
+        set({ pendingLinkSourceId: null });
+        return;
+      }
+      
+      const srcIface = src.interfaces[0]; // just bind to first interface for edit
+      const tgtIface = tgt.interfaces[0];
+      const linkId = `link-${Math.random().toString(36).substring(2, 7)}`;
+      eng.addLink(createLink(linkId, srcIface.id, tgtIface.id));
+      
+      set({ links: eng.getLinks(), pendingLinkSourceId: null });
+    },
+
+    setPendingLinkSource: (id: string | null) => {
+      set({ pendingLinkSourceId: id });
     }
   };
 });

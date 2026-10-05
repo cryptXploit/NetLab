@@ -1,7 +1,10 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { HapticService } from '../../../core/native/HapticService';
+import { useTranslation } from 'react-i18next';
 
 export const SimulationControls: React.FC = () => {
+  const { t } = useTranslation();
   const currentTick = useSimulationStore((state) => state.currentTick);
   const stepForward = useSimulationStore((state) => state.stepForward);
   const reset = useSimulationStore((state) => state.reset);
@@ -40,10 +43,10 @@ export const SimulationControls: React.FC = () => {
             
             <div className="flex space-x-2">
               <button
-                onClick={() => sendPing('hostA', 'server.netlab')}
+                onClick={() => { HapticService.tap(); sendPing('hostA', 'server.netlab'); }}
                 className="px-4 py-2 bg-blue-600/50 hover:bg-blue-600/80 active:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
               >
-                Ping server.netlab
+                {t('Send Ping')}
               </button>
               <button
                 onClick={() => requestDHCP('hostC')}
@@ -52,10 +55,10 @@ export const SimulationControls: React.FC = () => {
                 Request IP (Host C)
               </button>
               <button
-                onClick={stepForward}
+                onClick={() => { HapticService.tap(); stepForward(); }}
                 className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"
               >
-                Step Forward
+                {t('Tick')}
               </button>
               <button
                 onClick={reset}

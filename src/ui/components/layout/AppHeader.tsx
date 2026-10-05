@@ -2,6 +2,9 @@ import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
 import { Stethoscope, Shuffle, User, Share2, Download } from 'lucide-react';
 import { useState } from 'react';
+import { Settings } from 'lucide-react';
+import { useSettingsStore } from '../../../app/store/useSettingsStore';
+import { useTranslation } from 'react-i18next';
 import { ShareLabModal } from '../sharing/ShareLabModal';
 import { ImportLabModal } from '../sharing/ImportLabModal';
 import { useProfileStore } from '../../../app/store/useProfileStore';
@@ -19,6 +22,8 @@ export const AppHeader: React.FC = () => {
   
   const level = useProfileStore(state => state.level);
   const toggleProfile = useProfileStore(state => state.toggleProfile);
+  const toggleSettings = useSettingsStore(state => state.toggleSettings);
+  const { t } = useTranslation();
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
@@ -46,14 +51,14 @@ export const AppHeader: React.FC = () => {
         onClick={loadBasicLab}
         className="px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition-colors"
       >
-        Load Basic Lab
+        {t('Load Basic Lab')}
       </button>
       <button 
         onClick={loadRandomScenario}
         className="px-3 py-1.5 text-sm bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 rounded border border-indigo-700/50 transition-colors flex items-center gap-2"
       >
         <Shuffle className="w-4 h-4" />
-        Random Scenario
+        {t('Random Scenario')}
       </button>
       <div className="border-l border-zinc-700 h-8 mx-2"></div>
       
@@ -75,7 +80,7 @@ export const AppHeader: React.FC = () => {
         className="px-3 py-1.5 text-sm bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 rounded border border-blue-900/50 transition-colors flex items-center gap-2"
       >
         <Stethoscope className="w-4 h-4" />
-        Run Doctor
+        {t('Run Doctor')}
       </button>
       <div className="border-l border-zinc-700 h-8 mx-2"></div>
       <button 
@@ -98,17 +103,23 @@ export const AppHeader: React.FC = () => {
         className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors"
       >
         <Share2 className="w-4 h-4" />
-        Share Lab
+        {t('Share Lab')}
       </button>
       <button 
         onClick={() => setIsImportOpen(true)}
         className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors mr-2"
       >
         <Download className="w-4 h-4" />
-        Import Lab
+        {t('Import Lab')}
       </button>
       
       <div className="border-l border-zinc-700 h-8 mx-2"></div>
+      <button 
+        onClick={toggleSettings}
+        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors"
+      >
+        <Settings className="w-5 h-5" />
+      </button>
       <button 
         onClick={toggleProfile}
         className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors group"

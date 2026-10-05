@@ -16,16 +16,20 @@ import { ProfileModal } from './ui/components/profile/ProfileModal';
 import { ToastContainer } from './ui/components/notifications/ToastContainer';
 
 import { useProfileStore } from './app/store/useProfileStore';
+import { useSettingsStore } from './app/store/useSettingsStore';
+import { SettingsModal } from './ui/components/settings/SettingsModal';
 
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
   const currentView = useSimulationStore((state) => state.currentView);
   const initializeProfile = useProfileStore((state) => state.initializeProfile);
+  const initializeSettings = useSettingsStore((state) => state.initializeSettings);
 
   useEffect(() => {
     loadBasicLab();
     initializeProfile();
-  }, [loadBasicLab, initializeProfile]);
+    initializeSettings();
+  }, [loadBasicLab, initializeProfile, initializeSettings]);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col">
@@ -47,6 +51,7 @@ function App() {
         )}
       </div>
       <ProfileModal />
+      <SettingsModal />
       <ToastContainer />
     </div>
   );

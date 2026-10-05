@@ -105,7 +105,11 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       srcDevice.arpQueue.push(packet);
 
       const route = findLongestPrefixMatch(nextHopIp, srcDevice.routingTable);
-      const outIface = srcDevice.interfaces.find(i => i.id === route?.interfaceId) || srcDevice.interfaces[0];
+      const outIface = srcDevice.interfaces.find(i => i.id === route?.interfaceId);
+        if (!outIface) {
+          eng.enqueueEvent({ id: `drop-${packet.id}-${eng.getCurrentTick()}`, timestamp: 0, type: SimulationEventType.PACKET_DROPPED, payload: { packet }, explanation: `Route interface not found.` }, 0);
+          return;
+        }
 
       const arpReqId = `arp-req-${Math.random().toString(36).substring(2, 9)}`;
       const arpPayload: ARPPayload = {
@@ -328,7 +332,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
             }
 
             const nextHopIp = route.nextHop || packet.destinationIp;
-            const outIface = receivingDevice.interfaces.find(i => i.id === route.interfaceId) || receivingDevice.interfaces[0];
+            const outIface = receivingDevice.interfaces.find(i => i.id === route.interfaceId);
+            if (!outIface) { eng.enqueueEvent({ id: `drop-${packet.id}-${eng.getCurrentTick()}`, timestamp: 0, type: SimulationEventType.PACKET_DROPPED, payload: { packet }, explanation: `Route interface not found.` }, 0); return; }
             packet.sourceMac = outIface.macAddress;
 
             transmitOrARP(eng, receivingDevice, packet, nextHopIp);
@@ -358,7 +363,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
   isPlaying: false,
   playbackSpeed: 1,
 
-    loadBasicLab: () => {
+    loadBasicLab: () => { get().pause();
       const newEngine = new SimulationEngine();
       
       const ifaceA = createNetworkInterface('if-hostA', 'AA:AA:AA:AA:AA:AA', '192.168.1.10');
@@ -463,13 +468,13 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
           route.nextHop = nextHop;
           set({ devices: [...eng.getDevices()] });
         } else {
-          dev.routingTable.push({ network, prefix, nextHop, interfaceId: dev.interfaces[0].id });
+          dev.routingTable.push({ network, prefix, nextHop, interfaceId: dev.interfaces[0]?.id || "unknown" });
           set({ devices: [...eng.getDevices()] });
         }
       }
     },
 
-    loadBrokenGatewayLab: () => {
+    loadBrokenGatewayLab: () => { get().pause();
       const newEngine = new SimulationEngine();
       
       const ifaceA = createNetworkInterface('if-hostA', 'AA:AA:AA:AA:AA:AA', '192.168.1.10');
@@ -512,7 +517,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
               });
     },
 
-    restoreSnapshot: (snapshot: any) => {
+    restoreSnapshot: (snapshot: any) => { get().pause();
       const newEngine = new SimulationEngine();
       newEngine.restoreSnapshot(snapshot);
       registerEngineHandlers(newEngine);
@@ -528,7 +533,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       });
     },
 
-    loadSharedLab: (hash: string) => {
+    loadSharedLab: (hash: string) => { get().pause();
       try {
         const importedLab = LabShareService.importLabFromHash(hash);
         const newEngine = new SimulationEngine();
@@ -551,7 +556,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       }
     },
 
-    loadRandomScenario: () => {
+    loadRandomScenario: () => { get().pause();
       const newEngine = new SimulationEngine();
       
       generateRandomTroubleshootingLab(newEngine);

@@ -18,11 +18,13 @@ interface SettingsStoreState {
 let mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null;
 
 const applyTheme = (theme: 'dark' | 'light' | 'system') => {
-  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  if (isDark) {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
+  const isDark = theme === 'dark' || (theme === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (typeof document !== 'undefined') {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }
 };
 
@@ -52,15 +54,15 @@ export const useSettingsStore = create<SettingsStoreState>((set, get) => ({
     PreferenceService.set('theme', theme);
     applyTheme(theme);
     
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    if (mediaQueryListener) {
+    const mq = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    if (mediaQueryListener && mq) {
       mq.removeEventListener('change', mediaQueryListener);
     }
     if (theme === 'system') {
       mediaQueryListener = () => {
         applyTheme('system');
       };
-      mq.addEventListener('change', mediaQueryListener);
+      if (mq) mq.addEventListener('change', mediaQueryListener);
     }
   },
 
@@ -82,10 +84,10 @@ export const useSettingsStore = create<SettingsStoreState>((set, get) => ({
 }));
 
 // Setup initial listener if system is default
-const mq = window.matchMedia('(prefers-color-scheme: dark)');
+const mq = typeof window !== 'undefined' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 mediaQueryListener = () => {
   if (useSettingsStore.getState().theme === 'system') {
     applyTheme('system');
   }
 };
-mq.addEventListener('change', mediaQueryListener);
+if (mq) mq.addEventListener('change', mediaQueryListener);

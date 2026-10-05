@@ -1,10 +1,13 @@
 import React from 'react';
-import { User, Download, Share2, Award, Moon, Sun, Monitor, Smartphone, Globe } from 'lucide-react';
+import { User, Award, Moon, Sun, Monitor, Smartphone, Globe, Shield } from 'lucide-react';
+import { DataBackupModal } from '../backup/DataBackupModal';
+import { useState } from 'react';
 import { useProfileStore } from '../../../app/store/useProfileStore';
 import { useSettingsStore } from '../../../app/store/useSettingsStore';
 
 
 export const ProfileView: React.FC = () => {
+  const [showBackupModal, setShowBackupModal] = useState(false);
   
   
   
@@ -82,15 +85,11 @@ export const ProfileView: React.FC = () => {
 
         {/* Tools Section */}
         <section>
-          <h2 className="text-sm font-bold text-muted uppercase tracking-wider mb-3">Data</h2>
+          <h2 className="text-sm font-bold text-muted uppercase tracking-wider mb-3">Data & Privacy</h2>
           <div className="bg-surface border border-border-base rounded-2xl overflow-hidden divide-y divide-border-base">
-            <button className="w-full p-4 flex items-center gap-3 text-primary font-medium hover:bg-elevated transition-colors text-left">
-              <Download className="w-5 h-5 text-secondary" />
-              Import Lab
-            </button>
-            <button className="w-full p-4 flex items-center gap-3 text-primary font-medium hover:bg-elevated transition-colors text-left">
-              <Share2 className="w-5 h-5 text-secondary" />
-              Export / Share Lab
+            <button onClick={() => setShowBackupModal(true)} className="w-full p-4 flex items-center gap-3 text-primary font-medium hover:bg-elevated transition-colors text-left">
+              <Shield className="w-5 h-5 text-secondary" />
+              Offline Data Vault & Backup
             </button>
           </div>
         </section>
@@ -103,8 +102,8 @@ export const ProfileView: React.FC = () => {
             <p className="text-sm">Complete challenges to earn achievements.</p>
           </div>
         </section>
-        
       </div>
+      {showBackupModal && <DataBackupModal onClose={() => setShowBackupModal(false)} />}
     </div>
   );
 };

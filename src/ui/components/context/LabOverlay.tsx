@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLabStore } from '../../../app/store/useLabStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { evaluateRules } from '../../../core/simulation/ScenarioEvaluator';
 import { CheckCircle2, ChevronRight, HelpCircle, X, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,7 +11,6 @@ export const LabOverlay: React.FC = () => {
   const getLabById = useLabStore(state => state.getLabById);
   const exitLab = useLabStore(state => state.exitLab);
   const advanceStep = useLabStore(state => state.advanceStep);
-  const markLabComplete = useLabStore(state => state.markLabComplete);
 
   const eventHistory = useSimulationStore(state => state.eventHistory);
   const engine = useSimulationStore(state => state.engine);
@@ -26,8 +26,8 @@ export const LabOverlay: React.FC = () => {
     if (progress.status === 'Completed') return;
 
     const currentStep = lab.steps[progress.currentStepIndex];
-    if (currentStep.successCondition) {
-      const isSuccess = currentStep.successCondition(engine, eventHistory);
+    if (currentStep.verificationRules) {
+      const isSuccess = evaluateRules(currentStep.verificationRules, engine);
       if (isSuccess) {
         advanceStep();
       }
@@ -116,7 +116,7 @@ export const LabOverlay: React.FC = () => {
                     <HelpCircle className="w-4 h-4" />
                     Need a Hint?
                   </button>
-                  {!currentStep.successCondition && (
+                  {!currentStep.verificationRules && (
                     <button 
                       onClick={advanceStep}
                       className="flex items-center gap-1 text-sm font-medium text-white bg-accent hover:bg-accent-hover px-4 py-1.5 rounded-full"

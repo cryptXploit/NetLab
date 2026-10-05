@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLabStore } from '../../../app/store/useLabStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { evaluateRules } from '../../../core/simulation/ScenarioEvaluator';
 import { CheckCircle2, FileText, HelpCircle, X, Maximize2, Minimize2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,7 +26,7 @@ export const TroubleshootingOverlay: React.FC = () => {
 
     if (progress.status === 'Completed') return;
 
-    if (lab.troubleshootingConfig.verificationCondition(engine, eventHistory)) {
+    if (lab.troubleshootingConfig.verificationRules && evaluateRules(lab.troubleshootingConfig.verificationRules, engine)) {
       markLabComplete(activeLabId);
     }
   }, [eventHistory, activeLabId, progress, engine, markLabComplete, getLabById]);

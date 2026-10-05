@@ -10,6 +10,27 @@ export interface LabHint {
   cost?: number;
 }
 
+export type VerificationRuleType = 'PACKET_DELIVERED' | 'INTERFACE_IP' | 'ROUTE_EXISTS';
+
+export interface VerificationRule {
+  type: VerificationRuleType;
+  
+  // For PACKET_DELIVERED
+  protocol?: string;
+  sourceIp?: string;
+  destinationIp?: string;
+
+  // For INTERFACE_IP
+  deviceId?: string;
+  interfaceId?: string;
+  expectedIp?: string;
+
+  // For ROUTE_EXISTS
+  network?: string;
+  prefix?: number;
+  nextHop?: string;
+}
+
 export type LabMode = 'tutorial' | 'troubleshooting';
 
 export interface TroubleshootingConfig {
@@ -17,7 +38,7 @@ export interface TroubleshootingConfig {
   symptom: string;
   rootCause: string;
   solutionExplanation: string;
-  verificationCondition: (engineState: any, eventHistory: any[]) => boolean;
+  verificationRules: VerificationRule[];
 }
 
 export interface LabStep {
@@ -27,7 +48,7 @@ export interface LabStep {
   actionRequired?: string;
   observation?: string;
   explanation?: string;
-  successCondition?: (engineState: any, eventHistory: any[]) => boolean;
+  verificationRules?: VerificationRule[];
 }
 
 export interface LabDefinition {
@@ -41,7 +62,8 @@ export interface LabDefinition {
   learningObjectives: string[];
   
   initialStateHash?: string; // If using the stringified hash from ScenarioGenerator
-  initialStateGenerator?: (engine: any) => void; // If using code to build topology
+  initialState?: { devices: any[]; links: any[] };
+  // Note: initialStateGenerator is deprecated in favor of fully serializable initialState
 
   steps: LabStep[];
   hints: LabHint[];

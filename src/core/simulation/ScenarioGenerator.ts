@@ -1,62 +1,94 @@
-import { SimulationEngine } from './SimulationEngine';
+import type { LabDefinition } from '../domain/Lab';
 import { createHost, createRouter } from '../domain/Device';
 import { createNetworkInterface } from '../domain/NetworkInterface';
 import { createLink } from '../domain/Link';
-import { injectLinkFailure, injectWrongGateway } from './FaultInjector';
 
-export function generateRandomTroubleshootingLab(engine: SimulationEngine): void {
-  // We assume the engine is fresh, but just in case:
-  // (In our current implementation, we just pass a newly instantiated engine)
-
-  const net1 = Math.floor(Math.random() * 254) + 1;
-  const net2 = Math.floor(Math.random() * 254) + 1;
-
-  // Net 1: 192.168.${net1}.0 / 24
-  const hostAIp = `192.168.${net1}.10`;
-  const r1Iface1Ip = `192.168.${net1}.1`;
-  
-  // Net 2: 10.${net2}.0.0 / 24
-  const hostBIp = `10.${net2}.0.10`;
-  const r1Iface2Ip = `10.${net2}.0.1`;
-
-  const ifaceA = createNetworkInterface('if-hostA', 'AA:AA:AA:AA:AA:AA', hostAIp);
-  const hostA = createHost('hostA', 'Host A', [ifaceA]);
-  hostA.metadata = { x: 200, y: 300 };
-  hostA.routingTable = [{ network: '0.0.0.0', prefix: 0, nextHop: r1Iface1Ip, interfaceId: 'if-hostA' }];
-
-  const ifaceR1_1 = createNetworkInterface('if-R1-1', 'R1:R1:R1:R1:R1:01', r1Iface1Ip);
-  const ifaceR1_2 = createNetworkInterface('if-R1-2', 'R1:R1:R1:R1:R1:02', r1Iface2Ip);
-  const router1 = createRouter('router1', 'R1', [ifaceR1_1, ifaceR1_2]);
-  router1.metadata = { x: 500, y: 300 };
-  router1.routingTable = [
-    { network: `192.168.${net1}.0`, prefix: 24, interfaceId: 'if-R1-1' },
-    { network: `10.${net2}.0.0`, prefix: 24, interfaceId: 'if-R1-2' }
-  ];
-
-  const ifaceB = createNetworkInterface('if-hostB', 'BB:BB:BB:BB:BB:BB', hostBIp);
-  const hostB = createHost('hostB', 'Host B', [ifaceB]);
-  hostB.metadata = { x: 800, y: 300 };
-  hostB.routingTable = [{ network: '0.0.0.0', prefix: 0, nextHop: r1Iface2Ip, interfaceId: 'if-hostB' }];
-
-  const link1 = createLink('link1', 'if-hostA', 'if-R1-1');
-  const link2 = createLink('link2', 'if-R1-2', 'if-hostB');
-
-  engine.addDevice(hostA);
-  engine.addDevice(router1);
-  engine.addDevice(hostB);
-  engine.addLink(link1);
-  engine.addLink(link2);
-
-  // Inject Fault
-  const faultTypes = ['LINK_DOWN', 'BAD_GATEWAY'];
-  const selectedFault = faultTypes[Math.floor(Math.random() * faultTypes.length)];
-
-  if (selectedFault === 'LINK_DOWN') {
-    const targetLink = Math.random() > 0.5 ? 'link1' : 'link2';
-    injectLinkFailure(engine, targetLink);
-  } else {
-    // Bad Gateway for Host A
-    const badGatewayIp = `192.168.${net1}.${Math.floor(Math.random() * 50) + 100}`; // Random IP in the same subnet
-    injectWrongGateway(engine, 'hostA', badGatewayIp);
+// Simple deterministic PRNG based on Mulberry32
+export function deterministicRandom(seed: number) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
   }
+}
+
+export function generateWrongGatewayPractice(seed: number): LabDefinition {
+  const rand = deterministicRandom(seed);
+  
+  // Deterministic octets for variety
+  const thirdOctet = Math.floor(rand() * 200) + 1; // 1-200
+  const serverOctet = Math.floor(rand() * 200) + 1;
+  const faultHost = Math.floor(rand() * 200) + 50; // 50-250 (The wrong gateway IP)
+
+  const hostIp = `192.168.${thirdOctet}.10`;
+  const badGw = `192.168.${thirdOctet}.${faultHost}`;
+  const correctGw = `192.168.${thirdOctet}.1`;
+
+  const serverIp = `10.0.${serverOctet}.100`;
+  const serverGw = `10.0.${serverOctet}.1`;
+
+  return {
+    id: `generated-gw-${seed}`,
+    title: `Gateway Diagnosis #${seed}`,
+    subtitle: `Generated Troubleshooting`,
+    category: 'Troubleshooting',
+    difficulty: 'Intermediate',
+    estimatedTime: 10,
+    description: `A network technician accidentally misconfigured PC-1. It cannot reach the Server at ${serverIp}. Find and fix the issue.`,
+    learningObjectives: ['Verify Default Gateway', 'Understand ARP failures'],
+    mode: 'troubleshooting',
+    
+    initialState: (() => {
+      const engine: any = { devices: [], links: [], addDevice: (d: any) => engine.devices.push(d), addLink: (l: any) => engine.links.push(l) };
+      
+      const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', hostIp);
+      const hostA = createHost('hostA', 'PC-1', [ifaceA]);
+      hostA.metadata = { x: 200, y: 300 };
+      // FAULT
+      hostA.routingTable = [
+        { network: `192.168.${thirdOctet}.0`, prefix: 24, interfaceId: 'ifA' },
+        { network: '0.0.0.0', prefix: 0, nextHop: badGw, interfaceId: 'ifA' }
+      ];
+  
+      const ifaceR1 = createNetworkInterface('ifR1', 'R1:11', correctGw);
+      const ifaceR2 = createNetworkInterface('ifR2', 'R1:22', serverGw);
+      const router = createRouter('router1', 'Router', [ifaceR1, ifaceR2]);
+      router.metadata = { x: 500, y: 300 };
+      router.routingTable = [
+        { network: `192.168.${thirdOctet}.0`, prefix: 24, interfaceId: 'ifR1' },
+        { network: `10.0.${serverOctet}.0`, prefix: 24, interfaceId: 'ifR2' }
+      ];
+  
+      const ifaceB = createNetworkInterface('ifB', 'BB:BB:BB:BB:BB:BB', serverIp);
+      const server = createHost('hostB', 'Server', [ifaceB]);
+      server.metadata = { x: 800, y: 300 };
+      server.routingTable = [
+        { network: `10.0.${serverOctet}.0`, prefix: 24, interfaceId: 'ifB' },
+        { network: '0.0.0.0', prefix: 0, nextHop: serverGw, interfaceId: 'ifB' }
+      ];
+  
+      engine.addDevice(hostA);
+      engine.addDevice(router);
+      engine.addDevice(server);
+  
+      engine.addLink(createLink('l1', 'ifA', 'ifR1'));
+      engine.addLink(createLink('l2', 'ifR2', 'ifB'));
+      return { devices: engine.devices, links: engine.links };
+    })(),
+
+    troubleshootingConfig: {
+      objective: `Restore connectivity between PC-1 and the Server (${serverIp}).`,
+      symptom: `Ping from PC-1 to Server fails.`,
+      rootCause: `PC-1 was configured with the wrong default gateway (${badGw}).`,
+      solutionExplanation: `The default gateway must be the IP address of the local router interface (${correctGw}).`,
+      verificationRules: [{ type: 'PACKET_DELIVERED', protocol: 'ICMP', destinationIp: serverIp }]
+    },
+  
+    steps: [],
+    hints: [
+      { id: 'h1', message: `Run \`show ip route\` on PC-1. Notice the default gateway (0.0.0.0/0). Is it ${correctGw}?` },
+      { id: 'h2', message: `Look at the Router. Its interface on the left is ${correctGw}. PC-1 needs to point its default route there.` }
+    ]
+  };
 }

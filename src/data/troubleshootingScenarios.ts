@@ -2,7 +2,6 @@ import type { LabDefinition } from '../core/domain/Lab';
 import { createHost, createRouter, createSwitch } from '../core/domain/Device';
 import { createNetworkInterface } from '../core/domain/NetworkInterface';
 import { createLink } from '../core/domain/Link';
-import { SimulationEventType } from '../core/events/SimulationEvent';
 
 export const TRBL_WRONG_GATEWAY: LabDefinition = {
   id: 'trbl-1-wrong-gateway',
@@ -15,14 +14,14 @@ export const TRBL_WRONG_GATEWAY: LabDefinition = {
   learningObjectives: ['Verify Default Gateway', 'Understand Routing Tables', 'Read ARP Output'],
   mode: 'troubleshooting',
   
-  initialStateGenerator: (_engine) => {
-    // Fault: PC has a gateway pointing to .99 instead of .1
+  initialState: (() => {
+    const engine: any = { devices: [], links: [], addDevice: (d: any) => engine.devices.push(d), addLink: (l: any) => engine.links.push(l) };
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '192.168.1.10');
     const hostA = createHost('hostA', 'PC-1', [ifaceA], '192.168.1.99'); 
     hostA.metadata = { x: 200, y: 300 };
     hostA.routingTable = [
       { network: '192.168.1.0', prefix: 24, interfaceId: 'ifA' },
-      { network: '0.0.0.0', prefix: 0, nextHop: '192.168.1.99', interfaceId: 'ifA' } // BAD GATEWAY
+      { network: '0.0.0.0', prefix: 0, nextHop: '192.168.1.99', interfaceId: 'ifA' }
     ];
 
     const ifaceR1 = createNetworkInterface('ifR1', 'R1:11', '192.168.1.1');
@@ -48,16 +47,15 @@ export const TRBL_WRONG_GATEWAY: LabDefinition = {
 
     engine.addLink(createLink('l1', 'ifA', 'ifR1'));
     engine.addLink(createLink('l2', 'ifR2', 'ifB'));
-  },
+    return { devices: engine.devices, links: engine.links };
+  })(),
 
   troubleshootingConfig: {
     objective: 'Restore connectivity between PC-1 (192.168.1.10) and Server-1 (10.0.0.100).',
     symptom: 'Ping from PC-1 to Server-1 fails.',
     rootCause: 'PC-1 was configured with the wrong default gateway (192.168.1.99).',
     solutionExplanation: 'The default gateway must be the IP address of the local router interface (192.168.1.1). When PC-1 tried to reach 10.0.0.100, it sent an ARP request for the MAC of 192.168.1.99, but no device responded, dropping the packet.',
-    verificationCondition: (_engine, history) => {
-      return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.protocol === 'ICMP' && e.payload.packet.destinationIp === '10.0.0.100');
-    }
+    verificationRules: [{ type: 'PACKET_DELIVERED', protocol: 'ICMP', destinationIp: '10.0.0.100' }]
   },
 
   steps: [],
@@ -79,7 +77,8 @@ export const TRBL_MISSING_ROUTE: LabDefinition = {
   learningObjectives: ['Verify bidirectional routing', 'Inspect Router Tables'],
   mode: 'troubleshooting',
   
-  initialStateGenerator: (_engine) => {
+  initialState: (() => {
+    const engine: any = { devices: [], links: [], addDevice: (d: any) => engine.devices.push(d), addLink: (l: any) => engine.links.push(l) };
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '192.168.1.10');
     const hostA = createHost('hostA', 'PC-1', [ifaceA], '192.168.1.1');
     hostA.metadata = { x: 100, y: 300 };
@@ -117,16 +116,15 @@ export const TRBL_MISSING_ROUTE: LabDefinition = {
     engine.addLink(createLink('l1', 'ifA', 'ifR1_1'));
     engine.addLink(createLink('l2', 'ifR1_2', 'ifR2_1'));
     engine.addLink(createLink('l3', 'ifR2_2', 'ifB'));
-  },
+    return { devices: engine.devices, links: engine.links };
+  })(),
 
   troubleshootingConfig: {
     objective: 'Restore ping connectivity between PC-1 (192.168.1.10) and Server (172.16.0.100).',
     symptom: 'Packets leave PC-1 but a reply never arrives.',
     rootCause: 'Router R2 lacks a route back to the 192.168.1.0/24 network.',
     solutionExplanation: 'Routing must be bidirectional. R1 knew how to send the packet to R2, and R2 to the Server. But when the Server replied, R2 received the packet destined for 192.168.1.10 and dropped it because its routing table was missing an entry for that network.',
-    verificationCondition: (_engine, history) => {
-      return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.destinationIp === '192.168.1.10' && e.payload.packet.protocol === 'ICMP' && e.payload.packet.sourceIp === '172.16.0.100');
-    }
+    verificationRules: [{ type: 'PACKET_DELIVERED', protocol: 'ICMP', sourceIp: '172.16.0.100', destinationIp: '192.168.1.10' }]
   },
 
   steps: [],
@@ -148,7 +146,8 @@ export const TRBL_WRONG_IP: LabDefinition = {
   learningObjectives: ['Verify Subnetting', 'Inspect Interfaces', 'Understand L2 vs L3 boundaries'],
   mode: 'troubleshooting',
   
-  initialStateGenerator: (_engine) => {
+  initialState: (() => {
+    const engine: any = { devices: [], links: [], addDevice: (d: any) => engine.devices.push(d), addLink: (l: any) => engine.links.push(l) };
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '10.0.0.10');
     const hostA = createHost('hostA', 'PC-1', [ifaceA]);
     hostA.metadata = { x: 200, y: 200 };
@@ -171,16 +170,15 @@ export const TRBL_WRONG_IP: LabDefinition = {
 
     engine.addLink(createLink('l1', 'ifA', 'sw-if1'));
     engine.addLink(createLink('l2', 'ifB', 'sw-if2'));
-  },
+    return { devices: engine.devices, links: engine.links };
+  })(),
 
   troubleshootingConfig: {
     objective: 'Restore ping connectivity between PC-1 and PC-2.',
     symptom: 'PC-1 cannot ping 10.0.0.20.',
     rootCause: 'PC-2 was assigned an IP address (10.0.1.20) outside the local subnet (10.0.0.0/24).',
     solutionExplanation: 'Devices on the same switch must be in the same subnet to communicate without a router. By placing PC-2 in 10.0.1.0/24, PC-1 did not know how to reach it via ARP.',
-    verificationCondition: (_engine, history) => {
-      return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.protocol === 'ICMP' && e.payload.packet.destinationIp === '10.0.0.20');
-    }
+    verificationRules: [{ type: 'PACKET_DELIVERED', protocol: 'ICMP', destinationIp: '10.0.0.20' }]
   },
 
   steps: [],
@@ -201,7 +199,8 @@ export const TRBL_LINK_DOWN: LabDefinition = {
   learningObjectives: ['Check Link Status', 'Verify Interfaces'],
   mode: 'troubleshooting',
   
-  initialStateGenerator: (_engine) => {
+  initialState: (() => {
+    const engine: any = { devices: [], links: [], addDevice: (d: any) => engine.devices.push(d), addLink: (l: any) => engine.links.push(l) };
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '10.0.0.10');
     const hostA = createHost('hostA', 'PC-1', [ifaceA]);
     hostA.metadata = { x: 200, y: 300 };
@@ -228,16 +227,15 @@ export const TRBL_LINK_DOWN: LabDefinition = {
 
     engine.addLink(l1);
     engine.addLink(l2);
-  },
+    return { devices: engine.devices, links: engine.links };
+  })(),
 
   troubleshootingConfig: {
     objective: 'Restore connectivity between PC-1 and PC-2.',
     symptom: 'PC-1 cannot ping PC-2. The network appears dead.',
     rootCause: 'The physical link connecting PC-1 to the Switch was DOWN.',
     solutionExplanation: 'Layer 1 (Physical) is the foundation of networking. If a cable is unplugged or broken, no higher-level protocols (IP, ARP, TCP) can function.',
-    verificationCondition: (_engine, history) => {
-      return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.protocol === 'ICMP' && e.payload.packet.destinationIp === '10.0.0.20');
-    }
+    verificationRules: [{ type: 'PACKET_DELIVERED', protocol: 'ICMP', destinationIp: '10.0.0.20' }]
   },
 
   steps: [],
@@ -258,7 +256,8 @@ export const TRBL_DNS_FAILURE: LabDefinition = {
   learningObjectives: ['Differentiate IP vs DNS issues', 'Configure DNS Server IP'],
   mode: 'troubleshooting',
   
-  initialStateGenerator: (_engine) => {
+  initialState: (() => {
+    const engine: any = { devices: [], links: [], addDevice: (d: any) => engine.devices.push(d), addLink: (l: any) => engine.links.push(l) };
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '10.0.0.10');
     const hostA = createHost('hostA', 'Client', [ifaceA]);
     hostA.dnsServerIp = '10.0.0.99'; // Should be .53
@@ -291,16 +290,15 @@ export const TRBL_DNS_FAILURE: LabDefinition = {
     engine.addLink(createLink('l1', 'ifA', 'sw-if1'));
     engine.addLink(createLink('l2', 'ifD', 'sw-if2'));
     engine.addLink(createLink('l3', 'ifW', 'sw-if3'));
-  },
+    return { devices: engine.devices, links: engine.links };
+  })(),
 
   troubleshootingConfig: {
     objective: 'Ping "example.com" successfully from the Client.',
     symptom: 'Ping to "example.com" fails, but Ping to 10.0.0.80 directly succeeds.',
     rootCause: 'The Client was configured with the wrong DNS Server IP (10.0.0.99 instead of 10.0.0.53).',
     solutionExplanation: 'When you ping a hostname, the device must query its configured DNS server. If that IP is wrong, name resolution fails entirely, even if the destination web server is perfectly reachable by its IP address.',
-    verificationCondition: (_engine, history) => {
-      return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.destinationIp === '10.0.0.80' && e.payload.packet.protocol === 'ICMP');
-    }
+    verificationRules: [{ type: 'PACKET_DELIVERED', protocol: 'ICMP', destinationIp: '10.0.0.80' }]
   },
 
   steps: [],

@@ -12,6 +12,8 @@ import { TroubleshootingOverlay } from '../context/TroubleshootingOverlay';
 import { useLabStore } from '../../../app/store/useLabStore';
 import { NetworkDoctorPanel } from '../doctor/NetworkDoctorPanel';
 import { PredictionModal } from '../prediction/PredictionModal';
+import { PracticeOverlay } from '../practice/PracticeOverlay';
+import { usePracticeStore } from '../../../app/store/usePracticeStore';
 import { PredictionResultModal } from '../prediction/PredictionResultModal';
 import { ShareLabModal } from '../sharing/ShareLabModal';
 import { ImportLabModal } from '../sharing/ImportLabModal';
@@ -24,6 +26,7 @@ import { LabLibraryModal } from '../library/LabLibraryModal';
 export const SandboxView: React.FC = () => {
   const isPredictionModeEnabled = useWorkspaceStore(state => state.isPredictionModeEnabled);
   const activeLabId = useLabStore(state => state.activeLabId);
+  const activePracticeId = usePracticeStore(state => state.activeAttemptId);
   const activeLab = useLabStore(state => state.getLabById(activeLabId || ''));
   const togglePredictionMode = useWorkspaceStore(state => state.togglePredictionMode);
   const runDiagnostics = useWorkspaceStore(state => state.runDiagnostics);
@@ -150,6 +153,7 @@ export const SandboxView: React.FC = () => {
       <Terminal />
       <NetworkDoctorPanel />
       <PredictionModal />
+        {activePracticeId ? <PracticeOverlay /> : (activeLab?.mode === 'troubleshooting' ? <TroubleshootingOverlay /> : (activeLab ? <LabOverlay /> : null))}
       <PredictionResultModal />
       <ShareLabModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
       <ImportLabModal isOpen={isImportOpen} onClose={() => setIsImportOpen(false)} />

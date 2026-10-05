@@ -29,8 +29,9 @@ export const LabsView: React.FC = () => {
     engine.clear();
     
     const labDef = CURRICULUM.find(l => l.id === labId);
-    if (labDef && labDef.initialStateGenerator) {
-      labDef.initialStateGenerator(engine);
+    if (labDef && labDef.initialState) {
+      labDef.initialState.devices.forEach(d => engine.addDevice(d));
+      labDef.initialState.links.forEach(l => engine.addLink(l));
     }
     
     // Sync store

@@ -1,50 +1,101 @@
 import { create } from 'zustand';
-import { type PracticeQuestion, generateQuestion } from '../../core/practice/QuestionGenerators';
-import { useProfileStore } from './useProfileStore';
+import { persist } from 'zustand/middleware';
+import type { PracticeType } from '../../core/domain/Lab';
 
-interface PracticeStoreState {
-  activeQuestion: PracticeQuestion | null;
-  score: number;
-  streak: number;
-  lastResult: { correct: boolean; expected: string } | null;
-
-  loadNextQuestion: () => void;
-  submitAnswer: (answer: string) => void;
+export interface PracticeAttempt {
+  id: string;
+  scenarioId: string;
+  type: PracticeType;
+  startTime: number;
+  endTime?: number;
+  hintsUsed: number;
+  mistakes: number;
+  score?: number;
+  result?: 'SUCCESS' | 'FAILURE';
+  seed?: string; // for generated scenarios
 }
 
-export const usePracticeStore = create<PracticeStoreState>((set, get) => ({
-  activeQuestion: null,
-  score: 0,
-  streak: 0,
-  lastResult: null,
+interface PracticeState {
+  activeAttemptId: string | null;
+  history: PracticeAttempt[];
+  
+  startPractice: (scenarioId: string, type: PracticeType, seed?: string) => void;
+  recordMistake: () => void;
+  recordHintUsed: () => void;
+  finishPractice: (result: 'SUCCESS' | 'FAILURE', score: number) => void;
+  exitPractice: () => void;
+}
 
-  loadNextQuestion: () => {
-    set({
-      activeQuestion: generateQuestion(),
-      lastResult: null
-    });
-  },
-
-  submitAnswer: (answer: string) => {
-    const { activeQuestion, score, streak } = get();
-    if (!activeQuestion) return;
-
-    const normalizedInput = answer.trim().toLowerCase();
-    const normalizedExpected = activeQuestion.correctAnswer.trim().toLowerCase();
-
-    const isCorrect = normalizedInput === normalizedExpected;
-
-    if (isCorrect) {
-      useProfileStore.getState().addXp(10, 'subnetting', `Answered ${activeQuestion.type.replace('_', ' ').toLowerCase()} question`);
-    }
-
-    set({
-      score: isCorrect ? score + 10 : score,
-      streak: isCorrect ? streak + 1 : 0,
-      lastResult: {
-        correct: isCorrect,
-        expected: activeQuestion.correctAnswer
+export const usePracticeStore = create<PracticeState>()(
+  persist(
+    (set, _get) => ({
+      activeAttemptId: null,
+      history: [],
+      
+      startPractice: (scenarioId, type, seed) => {
+        const attemptId = `prac_${Date.now()}`;
+        const attempt: PracticeAttempt = {
+          id: attemptId,
+          scenarioId,
+          type,
+          startTime: Date.now(),
+          hintsUsed: 0,
+          mistakes: 0,
+          seed
+        };
+        
+        set((state) => ({
+          activeAttemptId: attemptId,
+          history: [...state.history, attempt]
+        }));
+      },
+      
+      recordMistake: () => {
+        set((state) => {
+          if (!state.activeAttemptId) return state;
+          return {
+            history: state.history.map(a => 
+              a.id === state.activeAttemptId 
+                ? { ...a, mistakes: a.mistakes + 1 }
+                : a
+            )
+          };
+        });
+      },
+      
+      recordHintUsed: () => {
+        set((state) => {
+          if (!state.activeAttemptId) return state;
+          return {
+            history: state.history.map(a => 
+              a.id === state.activeAttemptId 
+                ? { ...a, hintsUsed: a.hintsUsed + 1 }
+                : a
+            )
+          };
+        });
+      },
+      
+      finishPractice: (result, score) => {
+        set((state) => {
+          if (!state.activeAttemptId) return state;
+          return {
+            history: state.history.map(a => 
+              a.id === state.activeAttemptId 
+                ? { ...a, endTime: Date.now(), result, score }
+                : a
+            ),
+            activeAttemptId: null // End session
+          };
+        });
+      },
+      
+      exitPractice: () => {
+        set({ activeAttemptId: null });
       }
-    });
-  }
-}));
+    }),
+    {
+      name: 'netlab-practice-storage'
+    }
+  )
+);

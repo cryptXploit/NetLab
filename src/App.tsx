@@ -10,8 +10,11 @@ import { NetworkDoctorPanel } from './ui/components/doctor/NetworkDoctorPanel';
 import { PredictionModal } from './ui/components/prediction/PredictionModal';
 import { PredictionResultModal } from './ui/components/prediction/PredictionResultModal';
 
+import { PracticeView } from './ui/components/practice/PracticeView';
+
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
+  const currentView = useSimulationStore((state) => state.currentView);
 
   useEffect(() => {
     loadBasicLab();
@@ -21,14 +24,20 @@ function App() {
     <div className="relative h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col">
       <AppHeader />
       <div className="flex-1 relative overflow-hidden">
-        <TopologyView />
-        <SimulationControls />
-        <PacketInspector />
-        <Terminal />
-        <DeviceConfigPanel />
-        <NetworkDoctorPanel />
-        <PredictionModal />
-        <PredictionResultModal />
+        {currentView === 'LAB' ? (
+          <>
+            <TopologyView />
+            <SimulationControls />
+            <PacketInspector />
+            <Terminal />
+            <DeviceConfigPanel />
+            <NetworkDoctorPanel />
+            <PredictionModal />
+            <PredictionResultModal />
+          </>
+        ) : (
+          <PracticeView />
+        )}
       </div>
     </div>
   );

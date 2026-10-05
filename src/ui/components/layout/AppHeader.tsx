@@ -10,9 +10,29 @@ export const AppHeader: React.FC = () => {
   const isPredictionModeEnabled = useSimulationStore(state => state.isPredictionModeEnabled);
   const togglePredictionMode = useSimulationStore(state => state.togglePredictionMode);
 
+  const currentView = useSimulationStore(state => state.currentView);
+  const setView = useSimulationStore(state => state.setView);
+
   return (
     <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-4 select-none z-50 relative">
-      <div className="text-zinc-100 font-bold text-lg mr-8">NETLAB</div>
+      <div className="text-zinc-100 font-bold text-lg mr-4">NETLAB</div>
+      
+      {/* Main View Navigation */}
+      <div className="flex bg-zinc-950 rounded border border-zinc-800 p-0.5 mr-4">
+        <button
+          onClick={() => setView('LAB')}
+          className={`px-4 py-1.5 text-sm rounded font-medium transition-colors ${currentView === 'LAB' ? 'bg-zinc-800 text-zinc-100 shadow' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+          Lab Workspace
+        </button>
+        <button
+          onClick={() => setView('PRACTICE')}
+          className={`px-4 py-1.5 text-sm rounded font-medium transition-colors ${currentView === 'PRACTICE' ? 'bg-zinc-800 text-zinc-100 shadow' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+          Practice Arena
+        </button>
+      </div>
+
       <button 
         onClick={loadBasicLab}
         className="px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition-colors"

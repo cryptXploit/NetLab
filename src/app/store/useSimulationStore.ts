@@ -34,6 +34,9 @@ interface SimulationStoreState {
   activePrediction: { packetId: string; expectedOutcome: 'DELIVERED' | 'DROPPED' } | null;
   predictionResult: { success: boolean; actualOutcome: string; explanation: string } | null;
 
+  currentView: 'LAB' | 'PRACTICE';
+  setView: (view: 'LAB' | 'PRACTICE') => void;
+
   togglePredictionMode: () => void;
   submitPrediction: (expectedOutcome: 'DELIVERED' | 'DROPPED') => void;
   clearPredictionResult: () => void;
@@ -380,8 +383,12 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     pendingPrediction: null,
     activePrediction: null,
     predictionResult: null,
+    currentView: 'LAB',
 
-    // ... (rest is injected below)
+    setView: (view: 'LAB' | 'PRACTICE') => {
+      set({ currentView: view });
+    },
+
     runDiagnostics: () => {
       const eng = get().engine;
       const report = evaluateNetworkHealth(eng);

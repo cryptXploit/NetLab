@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
 import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
+import { useLabStore } from '../../../app/store/useLabStore';
 import { executeCommand } from '../../../core/cli/CommandParser';
 import { X, Terminal as TermIcon, ChevronRight } from 'lucide-react';
 import { DeviceType } from '../../../core/domain/Device';
@@ -44,6 +45,22 @@ export const Terminal: React.FC = () => {
     if (!trimmed) return;
     const result = executeCommand(trimmed, activeTerminalDeviceId, engine);
     setHistory(prev => [...prev, { command: trimmed, output: result }]);
+    
+    // Log as evidence if in a lab
+    if (useLabStore.getState().activeLabId) {
+      let tool: any = 'CLI';
+      if (trimmed.toLowerCase().startsWith('ping')) tool = 'PING';
+      else if (trimmed.toLowerCase().includes('arp')) tool = 'ARP';
+      else if (trimmed.toLowerCase().includes('route')) tool = 'ROUTE';
+      else if (trimmed.toLowerCase().includes('ipconfig') || trimmed.toLowerCase().includes('ifconfig')) tool = 'INTERFACE';
+      
+      useLabStore.getState().addEvidence({
+        tool,
+        target: device?.name || activeTerminalDeviceId,
+        result: result.join('\n').substring(0, 100) + (result.join('\n').length > 100 ? '...' : ''),
+        observation: `Ran command: ${trimmed}`
+      });
+    }
     setInput('');
     setTimeout(() => {
       if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

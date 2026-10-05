@@ -1,4 +1,4 @@
-import { SimulationState } from './NetworkTypes';
+
 
 export type LabDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 export type LabCategory = 'Foundations' | 'Addressing' | 'Transport' | 'Services' | 'Switching' | 'Routing' | 'Troubleshooting';
@@ -8,6 +8,16 @@ export interface LabHint {
   id: string;
   message: string;
   cost?: number;
+}
+
+export type LabMode = 'tutorial' | 'troubleshooting';
+
+export interface TroubleshootingConfig {
+  objective: string;
+  symptom: string;
+  rootCause: string;
+  solutionExplanation: string;
+  verificationCondition: (engineState: any, eventHistory: any[]) => boolean;
 }
 
 export interface LabStep {
@@ -37,6 +47,17 @@ export interface LabDefinition {
   hints: LabHint[];
 
   isChallenge?: boolean;
+  mode?: LabMode;
+  troubleshootingConfig?: TroubleshootingConfig;
+}
+
+export interface EvidenceEntry {
+  id: string;
+  timestamp: number;
+  tool: 'PING' | 'ARP' | 'ROUTE' | 'DNS' | 'INTERFACE' | 'CLI';
+  target: string;
+  result: string;
+  observation?: string;
 }
 
 export interface LabProgress {
@@ -47,4 +68,5 @@ export interface LabProgress {
   bestScore?: number;
   attempts: number;
   lastAttemptAt?: number;
+  investigationLog?: EvidenceEntry[];
 }

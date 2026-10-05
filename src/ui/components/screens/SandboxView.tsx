@@ -8,6 +8,8 @@ import { Terminal } from '../terminal/Terminal';
 import { DeviceContextSheet } from '../context/DeviceContextSheet';
 import { ConnectionSheet } from '../context/ConnectionSheet';
 import { LabOverlay } from '../context/LabOverlay';
+import { TroubleshootingOverlay } from '../context/TroubleshootingOverlay';
+import { useLabStore } from '../../../app/store/useLabStore';
 import { NetworkDoctorPanel } from '../doctor/NetworkDoctorPanel';
 import { PredictionModal } from '../prediction/PredictionModal';
 import { PredictionResultModal } from '../prediction/PredictionResultModal';
@@ -21,6 +23,8 @@ import { LabLibraryModal } from '../library/LabLibraryModal';
 
 export const SandboxView: React.FC = () => {
   const isPredictionModeEnabled = useWorkspaceStore(state => state.isPredictionModeEnabled);
+  const activeLabId = useLabStore(state => state.activeLabId);
+  const activeLab = useLabStore(state => state.getLabById(activeLabId || ''));
   const togglePredictionMode = useWorkspaceStore(state => state.togglePredictionMode);
   const runDiagnostics = useWorkspaceStore(state => state.runDiagnostics);
   const toggleLibrary = useLibraryStore(state => state.toggleLibrary);

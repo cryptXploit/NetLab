@@ -1,4 +1,4 @@
-import { LabDefinition } from '../core/domain/Lab';
+import type { LabDefinition } from '../core/domain/Lab';
 import { createHost, createRouter, createSwitch } from '../core/domain/Device';
 import { createNetworkInterface } from '../core/domain/NetworkInterface';
 import { createLink } from '../core/domain/Link';
@@ -14,7 +14,7 @@ export const LAB_YOUR_FIRST_NETWORK: LabDefinition = {
   description: 'Learn the basic building blocks of a network by connecting two computers together.',
   learningObjectives: ['Understand devices', 'Understand links', 'Send a packet'],
   
-  initialStateGenerator: (engine) => {
+  initialStateGenerator: (_engine) => {
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '192.168.1.10');
     const hostA = createHost('hostA', 'Host A', [ifaceA]);
     hostA.metadata = { x: 200, y: 300 };
@@ -39,7 +39,7 @@ export const LAB_YOUR_FIRST_NETWORK: LabDefinition = {
       actionRequired: 'Ping from Host A to Host B',
       observation: 'Watch the ICMP packet travel from Host A to Host B across the link.',
       explanation: 'Computers communicate by sending packets of data over physical or logical links.',
-      successCondition: (engine, history) => {
+      successCondition: (_engine, history) => {
         return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.destinationIp === '192.168.1.20');
       }
     }
@@ -60,7 +60,7 @@ export const LAB_ARP_DISCOVERY: LabDefinition = {
   description: 'Before a packet can be sent, the sender must know the physical (MAC) address of the target. Learn how ARP solves this.',
   learningObjectives: ['Understand ARP Requests', 'Understand ARP Replies', 'Inspect MAC Tables'],
   
-  initialStateGenerator: (engine) => {
+  initialStateGenerator: (_engine) => {
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '10.0.0.1');
     const hostA = createHost('hostA', 'PC1', [ifaceA]);
     hostA.metadata = { x: 200, y: 300 };
@@ -84,7 +84,7 @@ export const LAB_ARP_DISCOVERY: LabDefinition = {
       instruction: 'Ping PC2 (10.0.0.2) from PC1. Watch closely.',
       observation: 'PC1 first sends a broadcast ARP packet. PC2 replies with its MAC address. Only then does the actual Ping travel.',
       explanation: 'ARP (Address Resolution Protocol) broadcasts "Who has this IP?" to the local network.',
-      successCondition: (engine, history) => {
+      successCondition: (_engine, history) => {
         return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.protocol === 'ARP');
       }
     }
@@ -102,7 +102,7 @@ export const LAB_SWITCHING_BASICS: LabDefinition = {
   description: 'Switches connect multiple devices on the same network. Watch how they learn MAC addresses and forward packets to the correct port.',
   learningObjectives: ['Understand switches', 'Observe MAC learning', 'Observe broadcast behavior'],
   
-  initialStateGenerator: (engine) => {
+  initialStateGenerator: (_engine) => {
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '10.0.0.1');
     const hostA = createHost('hostA', 'PC1', [ifaceA]);
     hostA.metadata = { x: 200, y: 200 };
@@ -143,7 +143,7 @@ export const LAB_SWITCHING_BASICS: LabDefinition = {
       instruction: 'Ping PC3 (10.0.0.3) from PC1. Observe how the switch handles the initial ARP (broadcast) vs the Ping (unicast).',
       observation: 'The switch floods the ARP broadcast to all ports. It then learns PC3\'s MAC address and only forwards the Ping reply directly to PC1.',
       explanation: 'Switches maintain a MAC table mapping physical addresses to switch ports to efficiently route traffic.',
-      successCondition: (engine, history) => {
+      successCondition: (_engine, history) => {
         return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.destinationIp === '10.0.0.3' && e.payload.packet.protocol === 'ICMP');
       }
     }
@@ -161,7 +161,7 @@ export const LAB_DHCP_LEASE: LabDefinition = {
   description: 'DHCP automatically assigns IP addresses to devices. Observe the DORA process (Discover, Offer, Request, Acknowledge).',
   learningObjectives: ['Understand DHCP', 'Observe DORA process', 'Configure a client'],
   
-  initialStateGenerator: (engine) => {
+  initialStateGenerator: (_engine) => {
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', ''); // No IP!
     const hostA = createHost('hostA', 'Laptop', [ifaceA]);
     hostA.metadata = { x: 200, y: 300 };
@@ -189,7 +189,7 @@ export const LAB_DHCP_LEASE: LabDefinition = {
       instruction: 'Open the Laptop context menu and choose "DHCP Request".',
       observation: 'The Laptop broadcasts a DHCP Discover packet. The Router replies with an Offer. The Laptop then formally Requests the IP, and the Router Acknowledges it.',
       explanation: 'Without DHCP, network administrators would have to manually type IP addresses into every single device.',
-      successCondition: (engine, history) => {
+      successCondition: (_engine, history) => {
         const laptop = engine.getDevice('hostA');
         return laptop?.interfaces[0].ipAddress === '192.168.1.100';
       }
@@ -208,7 +208,7 @@ export const LAB_DNS_RESOLUTION: LabDefinition = {
   description: 'Computers route by IP addresses, but humans use names (like google.com). Learn how DNS translates names to numbers.',
   learningObjectives: ['Understand DNS', 'Observe DNS Queries'],
   
-  initialStateGenerator: (engine) => {
+  initialStateGenerator: (_engine) => {
     const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '10.0.0.10');
     const hostA = createHost('hostA', 'Client', [ifaceA]);
     hostA.dnsServerIp = '10.0.0.53';
@@ -250,7 +250,7 @@ export const LAB_DNS_RESOLUTION: LabDefinition = {
       instruction: 'Ping "example.com" from the Client.',
       observation: 'The Client first queries the DNS Server for "example.com". The DNS Server responds with "10.0.0.99". The Client then sends the actual ICMP Ping to 10.0.0.99.',
       explanation: 'DNS makes the Internet usable by replacing raw IP addresses with memorable domain names.',
-      successCondition: (engine, history) => {
+      successCondition: (_engine, history) => {
         return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.protocol === 'ICMP' && e.payload.packet.destinationIp === '10.0.0.99');
       }
     }
@@ -258,74 +258,7 @@ export const LAB_DNS_RESOLUTION: LabDefinition = {
   hints: []
 };
 
-export const LAB_FIX_GATEWAY: LabDefinition = {
-  id: 'lab-6-fix-gateway',
-  title: 'Fix the Wrong Gateway',
-  subtitle: 'Troubleshoot Routing',
-  category: 'Troubleshooting',
-  difficulty: 'Advanced',
-  estimatedTime: 15,
-  description: 'A misconfigured default gateway prevents a device from reaching the outside world. Identify the issue and fix it.',
-  learningObjectives: ['Inspect routing tables', 'Modify default gateways', 'Understand inter-network routing'],
-  
-  initialStateGenerator: (engine) => {
-    const ifaceA = createNetworkInterface('ifA', 'AA:AA:AA:AA:AA:AA', '192.168.1.50');
-    const hostA = createHost('hostA', 'PC', [ifaceA], '192.168.1.99'); // WRONG GATEWAY
-    hostA.metadata = { x: 200, y: 300 };
-    // Routing table includes the wrong default gateway
-    hostA.routingTable = [
-      { network: '192.168.1.0', prefix: 24, interfaceId: 'ifA' },
-      { network: '0.0.0.0', prefix: 0, nextHop: '192.168.1.99', interfaceId: 'ifA' }
-    ];
-
-    const ifaceR1 = createNetworkInterface('ifR1', 'R1:11', '192.168.1.1'); // CORRECT GATEWAY
-    const ifaceR2 = createNetworkInterface('ifR2', 'R1:22', '10.0.0.1');
-    const router = createRouter('router1', 'Router', [ifaceR1, ifaceR2]);
-    router.metadata = { x: 500, y: 300 };
-    router.routingTable = [
-      { network: '192.168.1.0', prefix: 24, interfaceId: 'ifR1' },
-      { network: '10.0.0.0', prefix: 24, interfaceId: 'ifR2' }
-    ];
-
-    const ifaceB = createNetworkInterface('ifB', 'BB:BB:BB:BB:BB:BB', '10.0.0.100');
-    const hostB = createHost('hostB', 'Server', [ifaceB], '10.0.0.1');
-    hostB.metadata = { x: 800, y: 300 };
-    hostB.routingTable = [
-      { network: '10.0.0.0', prefix: 24, interfaceId: 'ifB' },
-      { network: '0.0.0.0', prefix: 0, nextHop: '10.0.0.1', interfaceId: 'ifB' }
-    ];
-
-    engine.addDevice(hostA);
-    engine.addDevice(router);
-    engine.addDevice(hostB);
-
-    engine.addLink(createLink('l1', 'ifA', 'ifR1'));
-    engine.addLink(createLink('l2', 'ifR2', 'ifB'));
-  },
-
-  steps: [
-    {
-      id: 's1',
-      title: 'Diagnose the Problem',
-      instruction: 'Try to ping the Server (10.0.0.100) from the PC (192.168.1.50). Notice how the packet fails to route.',
-      observation: 'The PC tries to send ARP for its default gateway (192.168.1.99), but no device has that IP.',
-      explanation: 'A default gateway must be the IP address of the local router interface.',
-      actionRequired: 'Update PC default route to 192.168.1.1'
-    },
-    {
-      id: 's2',
-      title: 'Fix the Gateway',
-      instruction: 'Open the PC configuration, fix the gateway to 192.168.1.1, and try pinging the Server again.',
-      successCondition: (engine, history) => {
-        return history.some(e => e.type === SimulationEventType.PACKET_DELIVERED && e.payload.packet.protocol === 'ICMP' && e.payload.packet.destinationIp === '10.0.0.100');
-      }
-    }
-  ],
-  hints: [
-    { id: 'h1', message: 'Look closely at the Router\'s IP address on the network shared with the PC (192.168.1.1).' },
-    { id: 'h2', message: 'The PC is configured to send unknown traffic to 192.168.1.99. That device doesn\'t exist.' }
-  ]
-};
+import { TRBL_WRONG_GATEWAY, TRBL_MISSING_ROUTE, TRBL_WRONG_IP, TRBL_LINK_DOWN, TRBL_DNS_FAILURE } from './troubleshootingScenarios';
 
 export const CURRICULUM = [
   LAB_YOUR_FIRST_NETWORK,
@@ -333,5 +266,9 @@ export const CURRICULUM = [
   LAB_SWITCHING_BASICS,
   LAB_DHCP_LEASE,
   LAB_DNS_RESOLUTION,
-  LAB_FIX_GATEWAY
+  TRBL_WRONG_GATEWAY,
+  TRBL_MISSING_ROUTE,
+  TRBL_WRONG_IP,
+  TRBL_LINK_DOWN,
+  TRBL_DNS_FAILURE
 ];

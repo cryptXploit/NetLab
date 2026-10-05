@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SimulationEngine } from '../simulation/SimulationEngine';
 import { InvariantChecker } from '../simulation/InvariantChecker';
-import { createHost, createRouter } from '../domain/Device';
+import { createHost } from '../domain/Device';
 import { createNetworkInterface } from '../domain/NetworkInterface';
 import { createLink } from '../domain/Link';
 

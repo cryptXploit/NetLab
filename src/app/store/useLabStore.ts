@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { LabDefinition, LabProgress } from '../../core/domain/Lab';
+import type { LabDefinition, LabProgress, EvidenceEntry } from '../../core/domain/Lab';
 import { CURRICULUM } from '../../data/curriculum';
 
 interface LabStoreState {
@@ -12,6 +12,8 @@ interface LabStoreState {
   advanceStep: () => void;
   markLabComplete: (labId: string) => void;
   getLabById: (id: string) => LabDefinition | undefined;
+  addEvidence: (entry: Omit<EvidenceEntry, 'id' | 'timestamp'>) => void;
+  resetEvidence: () => void;
 }
 
 export const useLabStore = create<LabStoreState>()(
@@ -27,7 +29,8 @@ export const useLabStore = create<LabStoreState>()(
             status: 'Not Started',
             currentStepIndex: 0,
             hintsUsed: [],
-            attempts: 0
+            attempts: 0,
+            investigationLog: []
           };
           
           return {
@@ -82,7 +85,51 @@ export const useLabStore = create<LabStoreState>()(
         }));
       },
 
-      getLabById: (id) => CURRICULUM.find(l => l.id === id)
+      getLabById: (id) => CURRICULUM.find(l => l.id === id),
+
+      addEvidence: (entry) => {
+        set((state) => {
+          const { activeLabId, progress } = state;
+          if (!activeLabId) return state;
+          const prog = progress[activeLabId];
+          if (!prog) return state;
+          
+          const newEntry: EvidenceEntry = {
+            ...entry,
+            id: `ev-${Math.random().toString(36).substring(2,9)}`,
+            timestamp: Date.now()
+          };
+
+          return {
+            progress: {
+              ...progress,
+              [activeLabId]: {
+                ...prog,
+                investigationLog: [...(prog.investigationLog || []), newEntry]
+              }
+            }
+          };
+        });
+      },
+
+      resetEvidence: () => {
+        set((state) => {
+          const { activeLabId, progress } = state;
+          if (!activeLabId) return state;
+          const prog = progress[activeLabId];
+          if (!prog) return state;
+
+          return {
+            progress: {
+              ...progress,
+              [activeLabId]: {
+                ...prog,
+                investigationLog: []
+              }
+            }
+          };
+        });
+      }
     }),
     {
       name: 'netlab-progress-storage'

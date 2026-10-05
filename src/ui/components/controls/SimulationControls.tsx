@@ -6,6 +6,7 @@ export const SimulationControls: React.FC = () => {
   const stepForward = useSimulationStore((state) => state.stepForward);
   const reset = useSimulationStore((state) => state.reset);
   const sendPing = useSimulationStore((state) => state.sendPing);
+  const requestDHCP = useSimulationStore((state) => state.requestDHCP);
 
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-xl p-4 shadow-2xl flex items-center space-x-6 text-zinc-200">
@@ -19,6 +20,12 @@ export const SimulationControls: React.FC = () => {
           className="px-4 py-2 bg-blue-600/50 hover:bg-blue-600/80 active:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
         >
           Ping server.netlab
+        </button>
+        <button
+          onClick={() => requestDHCP('hostC')}
+          className="px-4 py-2 bg-green-600/50 hover:bg-green-600/80 active:bg-green-700 rounded-lg text-sm font-medium transition-colors"
+        >
+          Request IP (Host C)
         </button>
         <button
           onClick={stepForward}

@@ -18,7 +18,8 @@ export const Protocol = {
   UDP: 'UDP',
   ICMP: 'ICMP',
   ARP: 'ARP',
-  DNS: 'DNS'
+  DNS: 'DNS',
+  DHCP: 'DHCP'
 } as const;
 
 export type Protocol = typeof Protocol[keyof typeof Protocol];

@@ -9,6 +9,7 @@ import { Protocol } from '../../core/domain/NetworkTypes';
 import { handleICMP } from '../../core/protocols/ICMP';
 import { handleARP, type ARPPayload } from '../../core/protocols/ARP';
 import { handleDNS, type DNSPayload } from '../../core/protocols/DNS';
+import { handleDHCP, type DHCPPayload } from '../../core/protocols/DHCP';
 import { handleSwitching } from '../../core/protocols/Ethernet';
 import { findLongestPrefixMatch } from '../../core/network/Routing';
 
@@ -25,6 +26,7 @@ interface SimulationStoreState {
   stepForward: () => void;
   reset: () => void;
   sendPing: (sourceId: string, targetHostname: string) => void;
+  requestDHCP: (deviceId: string) => void;
   selectPacket: (id: string | null) => void;
 }
 
@@ -117,9 +119,15 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       hostA.routingTable = [{ network: '0.0.0.0', prefix: 0, nextHop: '192.168.1.1', interfaceId: 'if-hostA' }];
       hostA.dnsServerIp = '10.0.0.53';
 
+      const ifaceC = createNetworkInterface('if-hostC', 'DD:DD:DD:DD:DD:DD', '0.0.0.0');
+      const hostC = createHost('hostC', 'Host C', [ifaceC]);
+      hostC.metadata = { x: 100, y: 100 };
+      // Host C has no static routing, no DNS, IP is 0.0.0.0
+
       const ifaceS1_1 = createNetworkInterface('if-S1-1', 'S1:S1:S1:S1:S1:01', '');
       const ifaceS1_2 = createNetworkInterface('if-S1-2', 'S1:S1:S1:S1:S1:02', '');
-      const switch1 = createSwitch('switch1', 'S1', [ifaceS1_1, ifaceS1_2]);
+      const ifaceS1_3 = createNetworkInterface('if-S1-3', 'S1:S1:S1:S1:S1:03', '');
+      const switch1 = createSwitch('switch1', 'S1', [ifaceS1_1, ifaceS1_2, ifaceS1_3]);
       switch1.metadata = { x: 300, y: 200 };
 
       const ifaceR1_1 = createNetworkInterface('if-R1-1', 'R1:R1:R1:R1:R1:01', '192.168.1.1');
@@ -132,6 +140,13 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         { network: '10.0.0.53', prefix: 32, interfaceId: 'if-R1-3' },
         { network: '10.0.0.0', prefix: 24, interfaceId: 'if-R1-2' }
       ];
+      router1.dhcpServerConfig = {
+        poolNetwork: '192.168.1.0',
+        prefix: 24,
+        gateway: '192.168.1.1',
+        dns: '10.0.0.53',
+        nextIpSuffix: 100,
+      };
 
       const ifaceB = createNetworkInterface('if-hostB', 'BB:BB:BB:BB:BB:BB', '10.0.0.10');
       const hostB = createHost('hostB', 'Host B', [ifaceB]);
@@ -148,16 +163,19 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       };
 
       const link1 = createLink('link1', 'if-hostA', 'if-S1-1');
+      const linkC = createLink('linkC', 'if-hostC', 'if-S1-3');
       const link2 = createLink('link2', 'if-S1-2', 'if-R1-1');
       const link3 = createLink('link3', 'if-R1-2', 'if-hostB');
       const link4 = createLink('link4', 'if-R1-3', 'if-server');
 
       newEngine.addDevice(hostA);
+      newEngine.addDevice(hostC);
       newEngine.addDevice(switch1);
       newEngine.addDevice(router1);
       newEngine.addDevice(hostB);
       newEngine.addDevice(server1);
       newEngine.addLink(link1);
+      newEngine.addLink(linkC);
       newEngine.addLink(link2);
       newEngine.addLink(link3);
       newEngine.addLink(link4);
@@ -211,6 +229,36 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
           const nextHopIp = route.nextHop || dnsServerIp;
           transmitOrARP(eng, srcDevice, dnsPkt, nextHopIp);
         }
+      });
+
+      newEngine.getDispatcher().registerHandler(SimulationEventType.APP_DHCP_INTENT, (event, eng) => {
+        const { sourceId } = event.payload;
+        const srcDevice = eng.getDevice(sourceId);
+        if (!srcDevice) return;
+
+        const srcIface = srcDevice.interfaces[0];
+        const dhcpPayload: DHCPPayload = {
+          type: 'DISCOVER',
+          transactionId: `tx-${Math.random().toString(36).substring(2, 9)}`,
+        };
+
+        const dhcpPacket = createPacket(
+          `dhcp-disc-${Math.random().toString(36).substring(2, 9)}`,
+          srcIface.macAddress,
+          'FF:FF:FF:FF:FF:FF', // Broadcast MAC
+          '0.0.0.0',
+          '255.255.255.255', // Broadcast IP
+          Protocol.DHCP,
+          dhcpPayload
+        );
+
+        eng.enqueueEvent({
+          id: `send-${dhcpPacket.id}`,
+          timestamp: 0,
+          type: SimulationEventType.PACKET_IN_TRANSIT,
+          payload: { packet: dhcpPacket, sourceDeviceId: srcDevice.id },
+          explanation: `DHCP Discover Broadcasted by ${srcIface.macAddress}.`
+        }, 0);
       });
 
       newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_IN_TRANSIT, (event, eng) => {
@@ -277,12 +325,16 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         }
 
         const isForMe = receivingDevice.interfaces.some(iface => iface.ipAddress === packet.destinationIp || packet.destinationMac === 'FF:FF:FF:FF:FF:FF');
+        // DHCP packets are handled if it's broadcast (255.255.255.255) or to me
+        const isDhcpServerAccept = packet.protocol === Protocol.DHCP && (packet.destinationIp === '255.255.255.255' || receivingDevice.interfaces.some(i => i.ipAddress === packet.destinationIp));
 
-        if (isForMe) {
+        if (isForMe || isDhcpServerAccept) {
           if (packet.protocol === Protocol.ARP) {
             handleARP(packet, receivingDevice, eng);
           } else if (packet.protocol === Protocol.DNS) {
             handleDNS(packet, receivingDevice, eng);
+          } else if (packet.protocol === Protocol.DHCP) {
+            handleDHCP(packet, receivingDevice, eng);
           } else if (packet.protocol === Protocol.ICMP && receivingDevice.interfaces.some(i => i.ipAddress === packet.destinationIp)) {
             handleICMP(packet, receivingDevice, eng);
           }
@@ -355,6 +407,24 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         type: SimulationEventType.APP_PING_INTENT,
         payload: { sourceId, targetHostname },
         explanation: `Application requested ping to ${targetHostname}.`
+      }, 0);
+
+      set({
+        currentTick: currentEngine.getCurrentTick(),
+        eventHistory: currentEngine.getEventHistory(),
+        activePackets: currentEngine.getActivePackets(),
+      });
+    },
+
+    requestDHCP: (deviceId: string) => {
+      const currentEngine = get().engine;
+      
+      currentEngine.enqueueEvent({
+        id: `intent-${Math.random().toString(36).substring(2, 9)}`,
+        timestamp: 0,
+        type: SimulationEventType.APP_DHCP_INTENT,
+        payload: { sourceId: deviceId },
+        explanation: `Application requested DHCP configuration.`
       }, 0);
 
       set({

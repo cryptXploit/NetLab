@@ -8,6 +8,7 @@ export const SimulationEventType = {
   LINK_STATE_CHANGED: 'LINK_STATE_CHANGED',
   DEVICE_POWER_CHANGED: 'DEVICE_POWER_CHANGED',
   APP_PING_INTENT: 'APP_PING_INTENT',
+  APP_DHCP_INTENT: 'APP_DHCP_INTENT',
 } as const;
 
 export type SimulationEventType = typeof SimulationEventType[keyof typeof SimulationEventType];

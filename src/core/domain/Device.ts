@@ -27,6 +27,13 @@ export interface Device {
   dnsCache: Record<string, string>;
   dnsRecords?: Record<string, string>;
   dnsQueue: { targetHostname: string; pendingEvent: SimulationEvent }[];
+  dhcpServerConfig?: {
+    poolNetwork: string;
+    prefix: number;
+    gateway: string;
+    dns: string;
+    nextIpSuffix: number;
+  };
 }
 
 export interface Host extends Device {

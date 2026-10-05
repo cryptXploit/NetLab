@@ -13,6 +13,7 @@ import { db, type ActivityHistory } from '../../../core/persistence/db';
 export const ProfileModal: React.FC = () => {
   const { totalXp, level, topicMastery, isProfileOpen, toggleProfile } = useProfileStore();
   const [history, setHistory] = useState<ActivityHistory[]>([]);
+  const [backupPassword, setBackupPassword] = useState('');
 
     const engine = useSimulationStore(state => state.engine);
   const restoreSnapshot = useSimulationStore(state => state.restoreSnapshot);
@@ -21,7 +22,9 @@ export const ProfileModal: React.FC = () => {
 
   const handleExport = async () => {
     try {
-      const json = await BackupService.exportBackup(engine);
+      const json = backupPassword.length > 0 
+        ? await BackupService.exportProtectedBackup(engine, backupPassword)
+        : await BackupService.exportBackup(engine);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -46,15 +49,30 @@ export const ProfileModal: React.FC = () => {
     reader.onload = async (event) => {
       try {
         const text = event.target?.result as string;
-        const importedLab = await BackupService.importBackup(text);
+        const parsed = JSON.parse(text);
+
+        let importedLab;
+        if (parsed.isEncrypted) {
+          if (!backupPassword) {
+            addToast('Decryption Failed', 'Password required to decrypt this backup.', 'info');
+            return;
+          }
+          importedLab = await BackupService.importProtectedBackup(text, backupPassword);
+        } else {
+          importedLab = await BackupService.importBackup(text);
+        }
         
         await initializeProfile();
         restoreSnapshot(importedLab);
         
         addToast('Backup Restored', 'Profile and lab state have been successfully imported.', 'success');
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        addToast('Import Failed', 'Invalid or corrupted backup file.', 'info');
+        if (err.name === 'OperationError' || err.message?.includes('decryption')) {
+          addToast('Import Failed', 'Incorrect password or corrupted file.', 'info');
+        } else {
+          addToast('Import Failed', 'Invalid or corrupted backup file.', 'info');
+        }
       }
     };
     reader.readAsText(file);
@@ -201,6 +219,13 @@ export const ProfileModal: React.FC = () => {
 
         {/* Data & Backup Section */}
         <div className="p-6 pt-0 flex flex-col gap-3 border-t border-zinc-800/50 mt-4 pt-4">
+          <input
+            type="password"
+            placeholder="Backup Password (Optional)"
+            className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none focus:border-indigo-500 transition-colors"
+            value={backupPassword}
+            onChange={(e) => setBackupPassword(e.target.value)}
+          />
           <div className="flex justify-between gap-4">
             <button
               onClick={handleExport}

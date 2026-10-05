@@ -1,10 +1,10 @@
 import React from 'react';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
-import { Stethoscope } from 'lucide-react';
+import { Stethoscope, Shuffle } from 'lucide-react';
 
 export const AppHeader: React.FC = () => {
   const loadBasicLab = useSimulationStore(state => state.loadBasicLab);
-  const loadBrokenGatewayLab = useSimulationStore(state => state.loadBrokenGatewayLab);
+  const loadRandomScenario = useSimulationStore(state => state.loadRandomScenario);
   const injectFault = useSimulationStore(state => state.injectFault);
   const runDiagnostics = useSimulationStore(state => state.runDiagnostics);
   const isPredictionModeEnabled = useSimulationStore(state => state.isPredictionModeEnabled);
@@ -40,10 +40,11 @@ export const AppHeader: React.FC = () => {
         Load Basic Lab
       </button>
       <button 
-        onClick={loadBrokenGatewayLab}
-        className="px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition-colors"
+        onClick={loadRandomScenario}
+        className="px-3 py-1.5 text-sm bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 rounded border border-indigo-700/50 transition-colors flex items-center gap-2"
       >
-        Load Broken Gateway Lab
+        <Shuffle className="w-4 h-4" />
+        Random Scenario
       </button>
       <div className="border-l border-zinc-700 h-8 mx-2"></div>
       

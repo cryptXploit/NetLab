@@ -13,6 +13,7 @@ import { handleDHCP, type DHCPPayload } from '../../core/protocols/DHCP';
 import { handleSwitching } from '../../core/protocols/Ethernet';
 import { findLongestPrefixMatch } from '../../core/network/Routing';
 import { injectLinkFailure, injectWrongGateway } from '../../core/simulation/FaultInjector';
+import { generateRandomTroubleshootingLab } from '../../core/simulation/ScenarioGenerator';
 
 import { type DiagnosticReport, evaluateNetworkHealth } from '../../core/simulation/NetworkDoctor';
 
@@ -43,6 +44,7 @@ interface SimulationStoreState {
 
   loadBasicLab: () => void;
   loadBrokenGatewayLab: () => void;
+  loadRandomScenario: () => void;
   stepForward: () => void;
   reset: () => void;
   sendPing: (sourceId: string, targetHostname: string) => void;
@@ -556,6 +558,25 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
         selectedPacketId: null,
+      });
+    },
+
+    loadRandomScenario: () => {
+      const newEngine = new SimulationEngine();
+      
+      generateRandomTroubleshootingLab(newEngine);
+      registerEngineHandlers(newEngine);
+
+      set({ engine: newEngine });
+      set({
+        devices: newEngine.getDevices(),
+        links: newEngine.getLinks(),
+        currentTick: newEngine.getCurrentTick(),
+        eventHistory: newEngine.getEventHistory(),
+        activePackets: newEngine.getActivePackets(),
+        selectedPacketId: null,
+        activePrediction: null,
+        diagnosticReport: null
       });
     },
 

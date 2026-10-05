@@ -13,6 +13,7 @@ import { PredictionResultModal } from './ui/components/prediction/PredictionResu
 import { PracticeView } from './ui/components/practice/PracticeView';
 
 import { ProfileModal } from './ui/components/profile/ProfileModal';
+import { ToastContainer } from './ui/components/notifications/ToastContainer';
 
 import { useProfileStore } from './app/store/useProfileStore';
 
@@ -46,6 +47,7 @@ function App() {
         )}
       </div>
       <ProfileModal />
+      <ToastContainer />
     </div>
   );
 }

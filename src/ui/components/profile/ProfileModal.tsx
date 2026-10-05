@@ -2,6 +2,8 @@ import React from 'react';
 import { useProfileStore } from '../../../app/store/useProfileStore';
 import { X, Award, Terminal, Zap, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { ACHIEVEMENTS } from '../../../core/gamification/Achievements';
+import * as Icons from 'lucide-react';
 import { db, type ActivityHistory } from '../../../core/persistence/db';
 
 export const ProfileModal: React.FC = () => {
@@ -89,6 +91,40 @@ export const ProfileModal: React.FC = () => {
               <div className="text-xs text-zinc-500">Fault isolation, diagnostics</div>
             </div>
             <div className="text-lg font-black text-orange-400">{topicMastery.troubleshooting} <span className="text-xs text-zinc-600 font-normal">XP</span></div>
+          </div>
+        </div>
+
+
+        {/* Achievements Section */}
+        <div className="p-6 pt-0 flex flex-col gap-3">
+          <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <Award className="w-4 h-4" />
+            Achievements
+          </h3>
+          <div className="grid grid-cols-3 gap-3">
+            {ACHIEVEMENTS.map(ach => {
+              const isUnlocked = useProfileStore.getState().unlockedAchievements.includes(ach.id);
+              const IconComponent = (Icons as any)[ach.icon] || Icons.Award;
+              
+              return (
+                <div 
+                  key={ach.id} 
+                  className={`flex flex-col items-center text-center p-3 rounded-xl border transition-all ${
+                    isUnlocked 
+                      ? 'bg-indigo-900/20 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.1)]' 
+                      : 'bg-zinc-900/30 border-zinc-800/50 opacity-50 grayscale'
+                  }`}
+                  title={ach.description}
+                >
+                  <div className={`p-2 rounded-full mb-2 ${isUnlocked ? 'bg-indigo-900/50 text-indigo-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+                  <div className={`text-xs font-bold leading-tight ${isUnlocked ? 'text-zinc-200' : 'text-zinc-500'}`}>
+                    {ach.title}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

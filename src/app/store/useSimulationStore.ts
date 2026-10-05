@@ -402,6 +402,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       const { isLabResolved } = get();
       if (report.isHealthy && !isLabResolved) {
         useProfileStore.getState().addXp(50, 'troubleshooting', 'Resolved network anomaly');
+        useProfileStore.getState().unlockAchievement('DIAGNOSTIC_EXPERT');
         set({ diagnosticReport: report, isLabResolved: true });
       } else {
         set({ diagnosticReport: report });
@@ -650,6 +651,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       }
       const currentEngine = get().engine;
       
+      useProfileStore.getState().unlockAchievement('FIRST_PING');
+
       currentEngine.enqueueEvent({
         id: `intent-${Math.random().toString(36).substring(2, 9)}`,
         timestamp: 0,

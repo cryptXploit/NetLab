@@ -8,6 +8,7 @@ export interface UserProfile {
     subnetting: number;
     troubleshooting: number;
   };
+  unlockedAchievements: string[];
 }
 
 export interface ActivityHistory {

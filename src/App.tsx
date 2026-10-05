@@ -48,9 +48,9 @@ function App() {
   }, [isProfileLoaded, startTutorial]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col">
+    <div className="relative h-[100dvh] w-screen overflow-hidden bg-zinc-950 flex flex-col">
       <AppHeader />
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative w-full h-full overflow-hidden">
         {currentView === 'LAB' ? (
           <>
             <TopologyView />

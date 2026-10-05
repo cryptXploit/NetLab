@@ -47,13 +47,13 @@ export const Terminal: React.FC = () => {
   };
 
   return (
-    <div className="absolute top-4 right-4 w-96 max-h-[60vh] bg-black/95 border border-zinc-700 rounded-lg shadow-2xl flex flex-col overflow-hidden font-mono text-sm z-50">
+    <div className="fixed bottom-0 left-0 w-full h-[50dvh] bg-black border-t border-zinc-700 z-[60] flex flex-col font-mono text-sm pointer-events-auto md:absolute md:top-4 md:bottom-auto md:left-auto md:right-4 md:w-96 md:max-h-[60vh] md:rounded-lg md:border md:shadow-2xl">
       {/* Header */}
       <div className="flex justify-between items-center bg-zinc-800 px-3 py-2 border-b border-zinc-700 select-none">
         <span className="text-zinc-200 font-bold">{device.name} - Terminal</span>
         <button 
           onClick={() => openTerminal(null)}
-          className="text-zinc-400 hover:text-white transition-colors"
+          className="text-zinc-400 hover:text-white transition-colors p-2 text-xl shrink-0"
         >
           ✕
         </button>

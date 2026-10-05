@@ -16,7 +16,7 @@ export const SimulationControls: React.FC = () => {
   const addDevice = useSimulationStore((state) => state.addDevice);
 
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 border border-zinc-700 rounded-xl p-4 shadow-2xl flex flex-col items-center space-y-4 text-zinc-200">
+    <div className="fixed bottom-0 left-0 w-full md:absolute md:bottom-6 md:left-1/2 md:-translate-x-1/2 bg-zinc-900 border-t md:border border-zinc-700 md:rounded-xl p-3 md:p-4 shadow-2xl flex flex-col items-center gap-3 text-zinc-200 z-30 pointer-events-auto">
       
       {/* Mode Toggle */}
       <div className="flex bg-zinc-800 rounded-lg p-1">
@@ -34,14 +34,14 @@ export const SimulationControls: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex items-center space-x-6">
+      <div className="flex flex-wrap md:flex-nowrap justify-center items-center gap-3 md:gap-6 w-full max-w-md mx-auto">
         {mode === 'SIMULATE' ? (
           <>
             <div className="font-mono text-sm">
               Tick: <span className="font-bold text-zinc-50">{currentTick}</span>
             </div>
             
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap justify-center gap-2">
               <button
                 onClick={() => { HapticService.tap(); sendPing('hostA', 'server.netlab'); }}
                 className="px-4 py-2 bg-blue-600/50 hover:bg-blue-600/80 active:bg-blue-700 rounded-lg text-sm font-medium transition-colors"
@@ -69,7 +69,7 @@ export const SimulationControls: React.FC = () => {
             </div>
           </>
         ) : (
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap justify-center gap-2">
             <button
               onClick={() => addDevice('HOST', 400, 300)}
               className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"

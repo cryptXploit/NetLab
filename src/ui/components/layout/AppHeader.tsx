@@ -47,8 +47,10 @@ export const AppHeader: React.FC = () => {
   };
 
   return (
-    <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 gap-4 select-none z-50 relative">
-      <div className="text-zinc-100 font-bold text-lg mr-4">NETLAB</div>
+    <div className="h-14 bg-zinc-900 border-b border-zinc-800 flex items-center px-2 md:px-4 gap-2 md:gap-4 select-none z-50 relative w-full overflow-hidden">
+      <div className="text-zinc-100 font-bold text-lg hidden md:block">NETLAB</div>
+      <div className="flex items-center overflow-x-auto whitespace-nowrap hide-scrollbar gap-3 w-full pb-1 pointer-events-auto">
+      
       
       {/* Main View Navigation */}
       <div className="flex bg-zinc-950 rounded border border-zinc-800 p-0.5 mr-4">
@@ -68,13 +70,13 @@ export const AppHeader: React.FC = () => {
 
       <button 
         onClick={loadBasicLab}
-        className="px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition-colors"
+        className="px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded border border-zinc-700 transition-colors shrink-0"
       >
         {t('Load Basic Lab')}
       </button>
       <button 
         onClick={loadRandomScenario}
-        className="px-3 py-1.5 text-sm bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 rounded border border-indigo-700/50 transition-colors flex items-center gap-2"
+        className="px-3 py-1.5 text-sm bg-indigo-900/40 hover:bg-indigo-900/60 text-indigo-300 rounded border border-indigo-700/50 transition-colors flex items-center gap-2 shrink-0"
       >
         <Shuffle className="w-4 h-4" />
         {t('Random Scenario')}
@@ -96,7 +98,7 @@ export const AppHeader: React.FC = () => {
 
       <button 
         onClick={runDiagnostics}
-        className="px-3 py-1.5 text-sm bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 rounded border border-blue-900/50 transition-colors flex items-center gap-2"
+        className="px-3 py-1.5 text-sm bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 rounded border border-blue-900/50 transition-colors flex items-center gap-2 shrink-0"
       >
         <Stethoscope className="w-4 h-4" />
         {t('Run Doctor')}
@@ -115,18 +117,18 @@ export const AppHeader: React.FC = () => {
         Inject Bad Gateway
       </button>
 
-      <div className="flex-1"></div>
+      </div>
       
       <button 
         onClick={handleSaveLab}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors shrink-0"
       >
         <Save className="w-4 h-4" />
         Save Lab
       </button>
       <button 
         onClick={toggleLibrary}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors mr-2"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded transition-colors mr-2 shrink-0"
       >
         <Library className="w-4 h-4" />
         My Library
@@ -150,19 +152,19 @@ export const AppHeader: React.FC = () => {
       <div className="border-l border-zinc-700 h-8 mx-2"></div>
       <button 
         onClick={startTutorial}
-        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors"
+        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors shrink-0"
       >
         <HelpCircle className="w-5 h-5" />
       </button>
       <button 
         onClick={toggleSettings}
-        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors"
+        className="flex items-center justify-center p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors shrink-0"
       >
         <Settings className="w-5 h-5" />
       </button>
       <button 
         onClick={toggleProfile}
-        className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors group"
+        className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-zinc-800 transition-colors group shrink-0"
       >
         <span className="text-xs font-bold text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded border border-indigo-500/30">
           Lvl {level}

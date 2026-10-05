@@ -9,8 +9,13 @@ export const TopologyView: React.FC = () => {
   const links = useSimulationStore((state) => state.links);
   const activePackets = useSimulationStore((state) => state.activePackets);
 
+  const selectPacket = useSimulationStore((state) => state.selectPacket);
+
   return (
-    <div className="h-full w-full bg-zinc-950 overflow-hidden relative">
+    <div 
+      className="h-full w-full bg-zinc-950 overflow-hidden relative"
+      onClick={() => selectPacket(null)}
+    >
       <svg className="w-full h-full">
         {/* Draw Links first so they are behind devices */}
         {links.map((link) => (

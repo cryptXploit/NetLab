@@ -14,11 +14,13 @@ interface SimulationStoreState {
   currentTick: number;
   eventHistory: SimulationEvent[];
   activePackets: ActivePacket[];
+  selectedPacketId: string | null;
   
   initLab: () => void;
   stepForward: () => void;
   reset: () => void;
   sendTestPacket: () => void;
+  selectPacket: (id: string | null) => void;
 }
 
 export const useSimulationStore = create<SimulationStoreState>((set, get) => {
@@ -31,6 +33,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     currentTick: 0,
     eventHistory: [],
     activePackets: [],
+    selectedPacketId: null,
 
     initLab: () => {
       const newEngine = new SimulationEngine();
@@ -49,14 +52,14 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
       newEngine.addDevice(router1);
       newEngine.addLink(link1);
 
-      // Register Handlers for Phase 6
+      // Register Handlers for Phase 6 & 7
       newEngine.getDispatcher().registerHandler(SimulationEventType.PACKET_IN_TRANSIT, (event, eng) => {
         const payload = event.payload;
         eng.addActivePacket({
           packet: payload.packet,
           sourceId: 'host1',
           targetId: 'router1',
-          progress: 0, // In later phases we could track % progress based on ticks
+          progress: 0,
         });
         
         // Enqueue DELIVERED event
@@ -64,7 +67,8 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
           id: `deliver-${event.id}`,
           timestamp: 0,
           type: SimulationEventType.PACKET_DELIVERED,
-          payload: { packet: payload.packet }
+          payload: { packet: payload.packet },
+          explanation: `Packet arrived at destination MAC ${payload.packet.destinationMac} after traversing link.`,
         }, 5); // 5 ticks latency
       });
 
@@ -80,6 +84,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         currentTick: newEngine.getCurrentTick(),
         eventHistory: newEngine.getEventHistory(),
         activePackets: newEngine.getActivePackets(),
+        selectedPacketId: null,
       });
     },
 
@@ -116,15 +121,19 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
         id: `send-${pkt.id}`,
         timestamp: 0,
         type: SimulationEventType.PACKET_IN_TRANSIT,
-        payload: { packet: pkt }
+        payload: { packet: pkt },
+        explanation: 'Packet transmitted directly via link.'
       }, 0);
 
-      // Immediately sync state so UI knows about queued event (though activePackets isn't populated until tick)
       set({
         currentTick: currentEngine.getCurrentTick(),
         eventHistory: currentEngine.getEventHistory(),
         activePackets: currentEngine.getActivePackets(),
       });
+    },
+
+    selectPacket: (id: string | null) => {
+      set({ selectedPacketId: id });
     }
   };
 });

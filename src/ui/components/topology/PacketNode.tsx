@@ -3,12 +3,19 @@ import { motion } from 'framer-motion';
 import { type ActivePacket } from '../../../core/simulation/SimulationEngine';
 import { type Device } from '../../../core/domain/Device';
 
+import { useSimulationStore } from '../../../app/store/useSimulationStore';
+
 interface PacketNodeProps {
   activePacket: ActivePacket;
   devices: Device[];
 }
 
 export const PacketNode: React.FC<PacketNodeProps> = ({ activePacket, devices }) => {
+  const selectedPacketId = useSimulationStore((state) => state.selectedPacketId);
+  const selectPacket = useSimulationStore((state) => state.selectPacket);
+
+  const isSelected = selectedPacketId === activePacket.packet.id;
+
   const sourceDevice = devices.find(d => d.id === activePacket.sourceId);
   const targetDevice = devices.find(d => d.id === activePacket.targetId);
 
@@ -24,8 +31,14 @@ export const PacketNode: React.FC<PacketNodeProps> = ({ activePacket, devices })
       initial={{ cx: startX, cy: startY }}
       animate={{ cx: endX, cy: endY }}
       transition={{ duration: 1, ease: 'linear' }}
-      r={6}
-      className="fill-blue-500 stroke-blue-200 stroke-[1.5px]"
+      r={isSelected ? 8 : 6}
+      onClick={(e) => {
+        e.stopPropagation(); // don't bubble to svg
+        selectPacket(activePacket.packet.id);
+      }}
+      className={`fill-blue-500 cursor-pointer transition-all ${
+        isSelected ? 'stroke-yellow-400 stroke-4' : 'stroke-blue-200 stroke-[1.5px]'
+      }`}
     />
   );
 };

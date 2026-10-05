@@ -16,6 +16,7 @@ export interface SimulationEvent {
   timestamp: number;
   type: SimulationEventType;
   payload: any;
+  explanation?: string;
 }
 
 export interface PacketEventPayload {

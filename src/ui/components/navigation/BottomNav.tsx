@@ -30,6 +30,8 @@ export const BottomNav: React.FC = () => {
                   setTab(tab.id);
                 }
               }}
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
               className={`flex flex-col items-center justify-center w-16 gap-1 transition-colors ${
                 isActive ? 'text-accent' : 'text-muted hover:text-secondary'
               }`}

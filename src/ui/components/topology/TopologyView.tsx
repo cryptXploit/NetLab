@@ -4,6 +4,7 @@ import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { DeviceNode } from './DeviceNode';
 import { LinkLine } from './LinkLine';
 import { PacketNode } from './PacketNode';
+import { LayoutGrid } from 'lucide-react';
 
 const StaticLinks = React.memo(({ }: { version: number }) => {
   const links = useSimulationStore.getState().links;
@@ -47,6 +48,7 @@ const ActivePackets = React.memo(() => {
 export const TopologyView: React.FC = () => {
   // Subscribe ONLY to topologyVersion for structural changes
   const topologyVersion = useSimulationStore(state => state.topologyVersion);
+  const deviceCount = useSimulationStore(state => state.devices.length);
   
   const mode = useWorkspaceStore(state => state.mode);
   const pendingLinkSourceId = useWorkspaceStore(state => state.pendingLinkSourceId);
@@ -127,6 +129,18 @@ export const TopologyView: React.FC = () => {
       <div className="absolute inset-0 pointer-events-none">
         <StaticDevices version={topologyVersion} />
       </div>
+
+      {deviceCount === 0 && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+          <div className="w-20 h-20 bg-elevated rounded-full flex items-center justify-center mb-4 border border-border border-dashed opacity-50">
+            <LayoutGrid className="w-10 h-10 text-muted" />
+          </div>
+          <h2 className="text-xl font-black text-secondary mb-2">Sandbox is Empty</h2>
+          <p className="text-muted text-sm text-center max-w-xs">
+            Tap the + button to place devices, or browse the Curriculum to load a pre-built lab.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

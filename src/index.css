@@ -68,6 +68,13 @@
   }
 
   html, body, #root {
-    @apply h-full w-full m-0 p-0 bg-base text-primary font-sans;
+    @apply h-full w-full m-0 p-0 bg-base text-primary font-sans transition-colors duration-300;
+  }
+}
+
+@layer base {
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, [role="button"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }

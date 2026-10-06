@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PracticeType, Skill, LabDifficulty } from '../../core/domain/Lab';
+import { useToastStore } from './useToastStore';
 
 export interface PracticeAttempt {
   id: string;
@@ -92,6 +93,12 @@ export const usePracticeStore = create<PracticeState>()(
             activeAttemptId: null // End session
           };
         });
+        
+        if (result === 'SUCCESS') {
+          useToastStore.getState().addToast('Practice Complete', `Great job! You scored ${score} points.`, 'success');
+        } else {
+          useToastStore.getState().addToast('Practice Failed', `Don't worry, keep practicing!`, 'info');
+        }
       },
       
       exitPractice: () => {

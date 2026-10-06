@@ -8,6 +8,7 @@ import { useSettingsStore } from './app/store/useSettingsStore';
 import { TutorialOverlay } from './ui/components/tutorial/TutorialOverlay';
 import { useTutorialStore } from './app/store/useTutorialStore';
 import { AppBootService } from './core/native/AppBootService';
+import { ErrorBoundary } from './ui/components/core/ErrorBoundary';
 
 // Mobile Shell Components
 import { BottomNav } from './ui/components/navigation/BottomNav';
@@ -41,7 +42,8 @@ function App() {
   }, [isProfileLoaded, startTutorial]);
 
   return (
-    <div className="relative h-[100dvh] w-screen overflow-hidden bg-base flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <ErrorBoundary>
+      <div className="relative h-[100dvh] w-screen overflow-hidden bg-base flex flex-col pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       
       {/* Main Content Area */}
       <div className="flex-1 relative w-full h-full overflow-hidden z-0">
@@ -65,6 +67,7 @@ function App() {
       <ToastContainer />
       <TutorialOverlay />
     </div>
+    </ErrorBoundary>
   );
 }
 

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { LabDefinition, LabProgress, EvidenceEntry } from '../../core/domain/Lab';
 import { CURRICULUM } from '../../data/curriculum';
+import { useToastStore } from './useToastStore';
 
 interface LabStoreState {
   progress: Record<string, LabProgress>;
@@ -73,6 +74,7 @@ export const useLabStore = create<LabStoreState>()(
       },
 
       markLabComplete: (labId) => {
+        const lab = CURRICULUM.find(l => l.id === labId);
         set((state) => ({
           progress: {
             ...state.progress,
@@ -83,6 +85,9 @@ export const useLabStore = create<LabStoreState>()(
             }
           }
         }));
+        if (lab) {
+          useToastStore.getState().addToast('Lab Completed', `Congratulations! You mastered "${lab.title}".`, 'success');
+        }
       },
 
       getLabById: (id) => CURRICULUM.find(l => l.id === id),

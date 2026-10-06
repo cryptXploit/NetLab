@@ -94,7 +94,12 @@ export const DeviceNode: React.FC<DeviceNodeProps> = ({ device }) => {
       dragMomentum={false}
       onDragEnd={handleDragEnd}
       onClick={handleClick}
-      className={`cursor-pointer ${mode === 'EDIT' ? 'cursor-move' : ''}`}
+      onKeyDown={(e: any) => { if (e.key === 'Enter' || e.key === ' ') handleClick(e as any); }}
+      role="button"
+      tabIndex={0}
+      aria-label={`${device.name} (${device.type})`}
+      aria-pressed={isSelected}
+      className={`cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-base rounded-full ${mode === 'EDIT' ? 'cursor-move' : ''}`}
     >
       {shape}
       

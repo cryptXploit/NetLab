@@ -13,6 +13,7 @@ export const TRBL_DHCP_FAILURE: LabDefinition = {
   description: 'PC-1 is configured for DHCP, but it is not receiving an IP address. Investigate the DHCP server configuration.',
   learningObjectives: ['Understand DHCP DISCOVER/OFFER flow', 'Identify misconfigured DHCP scopes'],
   skills: ['DHCP', 'TROUBLESHOOTING', 'IPV4'],
+  isProRequired: true,
   prerequisites: ['lab-dhcp-lease'],
   mode: 'troubleshooting',
   

@@ -2,8 +2,9 @@ import React from 'react';
 import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { useLabStore } from '../../../app/store/useLabStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
+import { useProStore } from '../../../app/store/useProStore';
 import { useTimelineStore } from '../../../app/store/useTimelineStore';
-import { Network, Server, Share2, Activity, ShieldAlert, CheckCircle2, Globe, Zap, Lock } from 'lucide-react';
+import { Network, Server, Share2, Activity, ShieldAlert, CheckCircle2, Globe, Zap, Lock, Crown } from 'lucide-react';
 import { CURRICULUM } from '../../../data/curriculum';
 
 const CATEGORIES = [
@@ -23,6 +24,7 @@ export const LabsView: React.FC = () => {
   const progress = useLabStore(state => state.progress);
   const resetEngine = useSimulationStore(state => state.reset);
   const engine = useSimulationStore(state => state.engine);
+  const { isPro, setShowPaywall } = useProStore();
 
   const handleStartLab = (labId: string) => {
     resetEngine();
@@ -70,23 +72,32 @@ export const LabsView: React.FC = () => {
                 <h2 className="text-xl font-bold">{cat.label}</h2>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {catLabs.map(lab => {
                     const prog = progress[lab.id];
-                    const isCompleted = false || false;
-                    const isInProgress = prog?.status === 'In Progress' || false;
-                    const isLocked = lab.prerequisites?.some(prereqId => {
+                    const isCompleted = prog?.status === 'Completed';
+                    const isInProgress = prog?.status === 'In Progress';
+                    const isPrereqLocked = lab.prerequisites?.some(prereqId => {
                       const p = progress[prereqId];
-                      return !p || (false && false);
+                      return !p || p.status !== 'Completed';
                     });
+                    const isProLocked = lab.isProRequired && !isPro;
+                    
   
                     return (
                       <div 
                         key={lab.id}
                         onClick={() => {
-                          if (!isLocked) handleStartLab(lab.id);
+                          if (isProLocked) {
+                            setShowPaywall(true);
+                            return;
+                          }
+                          if (!isPrereqLocked) {
+                            handleStartLab(lab.id);
+                          }
                         }}
-                        className={`bg-surface border border-border rounded-xl p-5 transition-all shadow-sm relative overflow-hidden flex flex-col ${isLocked ? 'opacity-60 cursor-not-allowed grayscale-[0.5]' : 'hover:border-accent cursor-pointer hover:shadow-md active:scale-[0.98]'}`}
+                        className={`bg-surface border border-border rounded-xl p-5 transition-all shadow-sm relative overflow-hidden flex flex-col ${isPrereqLocked ? 'opacity-60 cursor-not-allowed grayscale-[0.5]' : 'hover:border-accent cursor-pointer hover:shadow-md active:scale-[0.98]'}`}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${lab.difficulty === 'Beginner' ? 'bg-success/20 text-success' : lab.difficulty === 'Intermediate' ? 'bg-accent/20 text-accent' : 'bg-danger/20 text-danger'}`}>
@@ -103,7 +114,12 @@ export const LabsView: React.FC = () => {
                                 In Progress
                               </span>
                             )}
-                            {isLocked && (
+                            {isProLocked && (
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded uppercase tracking-wide">
+                                <Crown className="w-3 h-3" /> Pro
+                              </span>
+                            )}
+                            {!isProLocked && isPrereqLocked && (
                               <span className="flex items-center gap-1 text-[10px] font-bold text-muted bg-elevated px-2 py-0.5 rounded uppercase tracking-wide">
                                 <Lock className="w-3 h-3" /> Locked
                               </span>
@@ -124,7 +140,7 @@ export const LabsView: React.FC = () => {
                         
                         <p className="text-sm text-muted line-clamp-2 mb-4 flex-1">{lab.description}</p>
                         
-                        {isLocked && lab.prerequisites && (
+                        {isPrereqLocked && lab.prerequisites && (
                           <p className="text-xs text-rose-500 mb-3 font-medium">
                             Requires: {CURRICULUM.find(l => l.id === lab.prerequisites![0])?.title || 'Previous lab'}
                           </p>
@@ -132,13 +148,14 @@ export const LabsView: React.FC = () => {
                         
                         <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
                           <span className="text-xs text-muted font-medium">{lab.estimatedTime} mins</span>
-                          {!isLocked && <span className="text-xs font-bold text-accent group-hover:underline">Launch Lab &rarr;</span>}
+                          {(!isPrereqLocked && !isProLocked) && <span className="text-xs font-bold text-accent group-hover:underline">Launch Lab &rarr;</span>}
+                          {isProLocked && <span className="text-xs font-bold text-amber-500 group-hover:underline">Unlock Pro &rarr;</span>}
                         </div>
                       </div>
                     );
                   })}
                 </div>
-            </section>
+              </section>
           );
         })}
       </div>

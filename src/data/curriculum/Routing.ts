@@ -17,6 +17,7 @@ export const LAB_TWO_ROUTER_PATH: LabDefinition = {
     'Observe packet hops across routers'
   ],
   skills: ['ROUTING', 'STATIC_ROUTES', 'IPV4'],
+  isProRequired: true,
   prerequisites: ['lab-1-first-network'],
   practiceMapping: ['practice-routing'],
 

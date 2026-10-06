@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { usePracticeStore } from '../../../app/store/usePracticeStore';
-import { Play, TrendingUp, TrendingDown, Target, Zap } from 'lucide-react';
+import { Play, TrendingUp, TrendingDown, Target, Zap, Crown } from 'lucide-react';
+import { useProStore } from '../../../app/store/useProStore';
 import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
 import { useTimelineStore } from '../../../app/store/useTimelineStore';
@@ -15,8 +16,13 @@ export const PracticeView: React.FC = () => {
   const setTab = useWorkspaceStore(state => state.setTab);
   const resetEngine = useSimulationStore(state => state.reset);
   const engine = useSimulationStore(state => state.engine);
+  const { isPro, setShowPaywall } = useProStore();
   
   const handleStart = () => {
+    if (!isPro) {
+      setShowPaywall(true);
+      return;
+    }
     // Generate a random seed for this practice attempt
     const seed = Math.floor(Math.random() * 10000).toString();
     
@@ -76,9 +82,10 @@ export const PracticeView: React.FC = () => {
               <p className="text-xs text-secondary mb-6">{recommendation.scenario.description}</p>
               <button 
                 onClick={handleStart}
-                className="flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-lg font-bold shadow-lg shadow-accent/20 hover:bg-accent-hover transition-colors"
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold shadow-lg transition-colors ${isPro ? 'bg-accent text-white shadow-accent/20 hover:bg-accent-hover' : 'bg-gradient-to-r from-amber-500 to-amber-400 text-white hover:opacity-90'}`}
               >
-                <Play className="w-4 h-4 fill-current" /> Start Challenge
+                {isPro ? <Play className="w-4 h-4 fill-current" /> : <Crown className="w-4 h-4 fill-current" />}
+                {isPro ? 'Start Challenge' : 'Unlock Pro'}
               </button>
             </div>
           </div>

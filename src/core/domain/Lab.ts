@@ -71,6 +71,7 @@ export interface LabDefinition {
   learningObjectives: string[];
   skills?: Skill[];
     prerequisites?: string[];
+    isProRequired?: boolean;
     practiceMapping?: string[];
   
   initialStateHash?: string; // If using the stringified hash from ScenarioGenerator

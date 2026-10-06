@@ -16,6 +16,8 @@ import { HomeView } from './ui/components/screens/HomeView';
 import { LabsView } from './ui/components/screens/LabsView';
 import { ProfileView } from './ui/components/screens/ProfileView';
 import { SandboxView } from './ui/components/screens/SandboxView';
+import { AdBanner } from './ui/components/ads/AdBanner';
+import { ProPaywallModal } from './ui/components/pro/ProPaywallModal';
 
 function App() {
   const loadBasicLab = useSimulationStore((state) => state.loadBasicLab);
@@ -60,11 +62,13 @@ function App() {
 
       </div>
 
+      <AdBanner />
       {/* Mobile Bottom Navigation */}
       <BottomNav />
 
       {/* Global Overlays */}
       <ToastContainer />
+      <ProPaywallModal />
       <TutorialOverlay />
     </div>
     </ErrorBoundary>

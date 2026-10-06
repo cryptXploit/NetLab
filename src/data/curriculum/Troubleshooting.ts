@@ -13,6 +13,7 @@ export const TRBL_DNS_FAILURE_DEEP: LabDefinition = {
   description: 'PC-1 cannot reach example.com. Investigate whether the network is broken, or if the DNS server is failing to respond.',
   learningObjectives: ['Differentiate between ICMP connectivity and application resolution', 'Verify DNS service availability'],
   skills: ['DNS', 'TROUBLESHOOTING', 'IPV4'],
+  isProRequired: true,
   prerequisites: ['lab-dns-resolution'],
   mode: 'troubleshooting',
   

@@ -16,7 +16,7 @@ NETLAB is a premium, offline-first mobile laboratory designed to teach absolute,
 - **Interactive Sandbox & Topology Builder:** An elegant canvas to drop routers, switches, and hosts. Draw links, assign IP pools, and watch real-time flow paths.
 - **Data-Driven Curriculum:** Step-by-step guided networking labs ranging from `Beginner` (Ping/ARP) to `Advanced` (Multi-router paths, DNS failures, DHCP exhaustion).
 - **Network Doctor & Troubleshooting:** A built-in fault injection engine. Break the lab dynamically and use the Network Doctor and virtual Terminal tools to diagnose L2/L3 anomalies.
-- **Adaptive Mastery & Infinite Practice:** A deterministic practice generator creates infinite scenarios based on a Mulberry32 seed algorithm, adapting to your specific knowledge gaps (`SUBNETTING`, `MAC_LEARNING`, `DNS`).
+- **Adaptive Mastery & Dynamic Practice:** A deterministic practice generator creates randomized scenarios based on a Mulberry32 seed algorithm, adapting to your specific knowledge gaps (`SUBNETTING`, `MAC_LEARNING`, `DNS`).
 - **Offline Data Vault:** Total privacy. Labs, history, and analytics are persisted securely via Dexie/IndexedDB and Zustand/localStorage, with robust Zod validation for JSON imports/exports.
 - **Pro Architecture:** Built-in monetization boundaries providing Ad-Free experiences, advanced challenge unlocks, and deep-dive diagnostic hints.
 

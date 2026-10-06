@@ -95,8 +95,8 @@ export const ProPaywallModal: React.FC = () => {
                 <Zap className="w-5 h-5 text-orange-500" />
               </div>
               <div>
-                <h4 className="font-bold text-primary">Unlimited Practice</h4>
-                <p className="text-sm text-secondary leading-snug">Generate infinite deterministic scenarios to drill your mastery.</p>
+                <h4 className="font-bold text-primary">Dynamic Practice</h4>
+                <p className="text-sm text-secondary leading-snug">Generate randomized deterministic scenarios to drill your mastery.</p>
               </div>
             </li>
             

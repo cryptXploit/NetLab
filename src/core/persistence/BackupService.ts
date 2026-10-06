@@ -4,6 +4,7 @@ import { useLabStore } from '../../app/store/useLabStore';
 import { usePracticeStore } from '../../app/store/usePracticeStore';
 import { useSettingsStore } from '../../app/store/useSettingsStore';
 import { CryptoUtils } from '../security/CryptoUtils';
+import { TopologyValidator } from './TopologyValidator';
 
 // ==========================================
 // 1. SCHEMAS (N2 - OFFLINE DATA MODEL)
@@ -169,6 +170,8 @@ export class BackupService {
     if (rawData.version === 1) {
        throw new Error("Version 1 backups are no longer supported. Please migrate via external tool.");
     }
+
+    TopologyValidator.validate(rawData);
 
     return BackupPayloadSchema.parse(rawData);
   }

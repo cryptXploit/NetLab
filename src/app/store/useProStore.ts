@@ -13,7 +13,7 @@ interface ProState {
 export const useProStore = create<ProState>()(
   persist(
     (set) => ({
-      isPro: false,
+      isPro: true, // Monetization deferred for V1
       showPaywall: false,
       
       unlockPro: () => set({ isPro: true, showPaywall: false }),

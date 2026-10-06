@@ -2,12 +2,16 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.cryptxploit.netlab',
-  appName: 'NetLab',
+  appName: 'NETLAB',
   webDir: 'dist',
   plugins: {
     SplashScreen: {
-      launchAutoHide: false,
-      backgroundColor: "#09090b"
+      launchAutoHide: true,
+      launchShowDuration: 2000,
+      backgroundColor: "#09090b",
+      showSpinner: true,
+      androidSpinnerStyle: "large",
+      spinnerColor: "#4f46e5"
     }
   }
 };

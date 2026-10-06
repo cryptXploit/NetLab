@@ -1,17 +1,16 @@
 
 
 export type Skill = 
-  | 'FOUNDATIONS'
-  | 'ARP'
-  | 'IPV4'
-  | 'DNS'
-  | 'DHCP'
-  | 'SWITCHING'
-  | 'ROUTING'
-  | 'TROUBLESHOOTING';
+  | 'FOUNDATIONS' | 'ETHERNET' | 'ARP' | 'IPV4' | 'SUBNETTING'
+  | 'DNS' | 'DHCP' 
+  | 'SWITCHING' | 'MAC_LEARNING' | 'BROADCAST_DOMAINS'
+  | 'ROUTING' | 'STATIC_ROUTES' | 'LONGEST_PREFIX' | 'GATEWAY'
+  | 'TRANSPORT' | 'TCP' | 'UDP' | 'PORTS'
+  | 'APPLICATION' | 'HTTP' 
+  | 'TROUBLESHOOTING' | 'NAT' | 'VLAN' | 'ACL';
 
 export type LabDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
-export type LabCategory = 'Foundations' | 'Addressing' | 'Transport' | 'Services' | 'Switching' | 'Routing' | 'Troubleshooting';
+export type LabCategory = 'Foundations' | 'Switching' | 'Routing' | 'Services' | 'Transport' | 'Application' | 'Troubleshooting' | 'Advanced';
 export type PracticeType = 'Prediction' | 'Configuration' | 'Subnetting';
 
 export interface LabHint {
@@ -71,6 +70,8 @@ export interface LabDefinition {
   description: string;
   learningObjectives: string[];
   skills?: Skill[];
+    prerequisites?: string[];
+    practiceMapping?: string[];
   
   initialStateHash?: string; // If using the stringified hash from ScenarioGenerator
   initialState?: { devices: any[]; links: any[] };

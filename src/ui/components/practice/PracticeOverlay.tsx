@@ -3,7 +3,7 @@ import { usePracticeStore } from '../../../app/store/usePracticeStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
 
 import { evaluateRules } from '../../../core/simulation/ScenarioEvaluator';
-import { generateWrongGatewayPractice } from '../../../core/simulation/ScenarioGenerator';
+import { generateRandomPractice } from '../../../core/simulation/PracticeDelegator';
 import { CheckCircle2, HelpCircle, X, Maximize2, Minimize2, ShieldAlert } from 'lucide-react';
 
 export const PracticeOverlay: React.FC = () => {
@@ -22,7 +22,7 @@ export const PracticeOverlay: React.FC = () => {
   const attempt = history.find(a => a.id === activeAttemptId);
   
   // Deterministic generation based on practice seed
-  const template = attempt?.seed ? generateWrongGatewayPractice(parseInt(attempt.seed)) : null;
+  const template = attempt?.seed ? generateRandomPractice(parseInt(attempt.seed)) : null;
 
   useEffect(() => {
     if (!attempt || attempt.result || !template || !template.troubleshootingConfig) return;

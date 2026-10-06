@@ -13,7 +13,7 @@ import { handleDHCP, type DHCPPayload } from '../../core/protocols/DHCP';
 import { handleSwitching } from '../../core/protocols/Ethernet';
 import { findLongestPrefixMatch } from '../../core/network/Routing';
 import { injectLinkFailure, injectWrongGateway } from '../../core/simulation/FaultInjector';
-import { generateWrongGatewayPractice } from '../../core/simulation/ScenarioGenerator';
+import { generateRandomPractice } from '../../core/simulation/PracticeDelegator';
 import { LabShareService } from '../../core/sharing/LabShareService';
 
 import { useProfileStore } from './useProfileStore';
@@ -563,7 +563,7 @@ export const useSimulationStore = create<SimulationStoreState>((set, get) => {
     loadRandomScenario: () => { get().pause();
       const newEngine = new SimulationEngine();
       
-      const lab = generateWrongGatewayPractice(Math.floor(Math.random() * 1000));
+      const lab = generateRandomPractice(Math.floor(Math.random() * 1000));
       lab.initialState?.devices.forEach(d => newEngine.addDevice(d));
       lab.initialState?.links.forEach(l => newEngine.addLink(l));
       

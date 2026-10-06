@@ -61,7 +61,7 @@ export const LAB_ARP_DISCOVERY: LabDefinition = {
   id: 'lab-2-arp-discovery',
   title: 'ARP Discovery',
   subtitle: 'How devices find MAC addresses',
-  category: 'Addressing',
+  category: 'Foundations',
   difficulty: 'Beginner',
   estimatedTime: 10,
   description: 'Before a packet can be sent, the sender must know the physical (MAC) address of the target. Learn how ARP solves this.',
@@ -297,6 +297,10 @@ export const LAB_DNS_RESOLUTION: LabDefinition = {
 };
 
 import { TRBL_WRONG_GATEWAY, TRBL_MISSING_ROUTE, TRBL_WRONG_IP, TRBL_LINK_DOWN, TRBL_DNS_FAILURE } from './troubleshootingScenarios';
+import { LAB_TWO_ROUTER_PATH } from './curriculum/Routing';
+import { TRBL_DHCP_FAILURE } from './curriculum/DHCPFailure';
+import { TRBL_DNS_FAILURE_DEEP } from './curriculum/Troubleshooting';
+
 
 export const CURRICULUM = [
   LAB_YOUR_FIRST_NETWORK,
@@ -304,9 +308,12 @@ export const CURRICULUM = [
   LAB_SWITCHING_BASICS,
   LAB_DHCP_LEASE,
   LAB_DNS_RESOLUTION,
+  LAB_TWO_ROUTER_PATH,
   TRBL_WRONG_GATEWAY,
   TRBL_MISSING_ROUTE,
   TRBL_WRONG_IP,
   TRBL_LINK_DOWN,
-  TRBL_DNS_FAILURE
+  TRBL_DNS_FAILURE,
+  TRBL_DHCP_FAILURE,
+  TRBL_DNS_FAILURE_DEEP
 ];

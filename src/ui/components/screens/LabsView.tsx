@@ -3,16 +3,17 @@ import { useWorkspaceStore } from '../../../app/store/useWorkspaceStore';
 import { useLabStore } from '../../../app/store/useLabStore';
 import { useSimulationStore } from '../../../app/store/useSimulationStore';
 import { useTimelineStore } from '../../../app/store/useTimelineStore';
-import { Network, Server, Share2, Activity, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Network, Server, Share2, Activity, ShieldAlert, CheckCircle2, Globe, Zap, Lock } from 'lucide-react';
 import { CURRICULUM } from '../../../data/curriculum';
 
 const CATEGORIES = [
   { id: 'Foundations', label: 'Foundations', icon: Network, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { id: 'Addressing', label: 'Addressing', icon: Activity, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  { id: 'Transport', label: 'Transport', icon: Share2, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-  { id: 'Services', label: 'Services', icon: Server, color: 'text-amber-500', bg: 'bg-amber-500/10' },
   { id: 'Switching', label: 'Switching', icon: Share2, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
   { id: 'Routing', label: 'Routing', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  { id: 'Services', label: 'Services', icon: Server, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  { id: 'Transport', label: 'Transport', icon: Share2, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+  { id: 'Application', label: 'Application', icon: Globe, color: 'text-fuchsia-500', bg: 'bg-fuchsia-500/10' },
+  { id: 'Advanced', label: 'Advanced', icon: Zap, color: 'text-orange-500', bg: 'bg-orange-500/10' },
   { id: 'Troubleshooting', label: 'Troubleshooting', icon: ShieldAlert, color: 'text-rose-500', bg: 'bg-rose-500/10' }
 ];
 
@@ -70,42 +71,73 @@ export const LabsView: React.FC = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {catLabs.map(lab => {
-                  const prog = progress[lab.id];
-                  const isCompleted = prog?.status === 'Completed';
-
-                  return (
-                    <div 
-                      key={lab.id}
-                      onClick={() => handleStartLab(lab.id)}
-                      className="bg-surface border border-border rounded-xl p-5 hover:border-accent cursor-pointer transition-all active:scale-[0.98] shadow-sm hover:shadow-md relative overflow-hidden"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${lab.difficulty === 'Beginner' ? 'bg-success/20 text-success' : lab.difficulty === 'Intermediate' ? 'bg-accent/20 text-accent' : 'bg-danger/20 text-danger'}`}>
-                          {lab.difficulty}
-                        </span>
-                        {isCompleted && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded uppercase tracking-wide">
-                            <CheckCircle2 className="w-3 h-3" /> Completed
+                  {catLabs.map(lab => {
+                    const prog = progress[lab.id];
+                    const isCompleted = false || false;
+                    const isInProgress = prog?.status === 'In Progress' || false;
+                    const isLocked = lab.prerequisites?.some(prereqId => {
+                      const p = progress[prereqId];
+                      return !p || (false && false);
+                    });
+  
+                    return (
+                      <div 
+                        key={lab.id}
+                        onClick={() => {
+                          if (!isLocked) handleStartLab(lab.id);
+                        }}
+                        className={`bg-surface border border-border rounded-xl p-5 transition-all shadow-sm relative overflow-hidden flex flex-col ${isLocked ? 'opacity-60 cursor-not-allowed grayscale-[0.5]' : 'hover:border-accent cursor-pointer hover:shadow-md active:scale-[0.98]'}`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${lab.difficulty === 'Beginner' ? 'bg-success/20 text-success' : lab.difficulty === 'Intermediate' ? 'bg-accent/20 text-accent' : 'bg-danger/20 text-danger'}`}>
+                            {lab.difficulty}
                           </span>
+                          <div className="flex gap-2">
+                            {isCompleted && (
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded uppercase tracking-wide">
+                                <CheckCircle2 className="w-3 h-3" /> Completed
+                              </span>
+                            )}
+                            {!isCompleted && isInProgress && (
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded uppercase tracking-wide">
+                                In Progress
+                              </span>
+                            )}
+                            {isLocked && (
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-muted bg-elevated px-2 py-0.5 rounded uppercase tracking-wide">
+                                <Lock className="w-3 h-3" /> Locked
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <h3 className="font-bold text-lg mb-1 pr-4">{lab.title}</h3>
+                        <p className="text-sm font-medium text-secondary mb-2">{lab.subtitle}</p>
+                        
+                        {lab.skills && lab.skills.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {lab.skills.slice(0, 3).map(s => (
+                              <span key={s} className="text-[9px] px-1.5 py-0.5 bg-elevated text-muted rounded uppercase tracking-wider">{s.replace('_', ' ')}</span>
+                            ))}
+                          </div>
                         )}
-                        {!isCompleted && prog?.status === 'In Progress' && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded uppercase tracking-wide">
-                            In Progress
-                          </span>
+                        
+                        <p className="text-sm text-muted line-clamp-2 mb-4 flex-1">{lab.description}</p>
+                        
+                        {isLocked && lab.prerequisites && (
+                          <p className="text-xs text-rose-500 mb-3 font-medium">
+                            Requires: {CURRICULUM.find(l => l.id === lab.prerequisites![0])?.title || 'Previous lab'}
+                          </p>
                         )}
+                        
+                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
+                          <span className="text-xs text-muted font-medium">{lab.estimatedTime} mins</span>
+                          {!isLocked && <span className="text-xs font-bold text-accent group-hover:underline">Launch Lab &rarr;</span>}
+                        </div>
                       </div>
-                      <h3 className="font-bold text-lg mb-1 pr-4">{lab.title}</h3>
-                      <p className="text-sm font-medium text-secondary mb-3">{lab.subtitle}</p>
-                      <p className="text-sm text-muted line-clamp-2 mb-4">{lab.description}</p>
-                      <div className="flex items-center justify-between mt-auto pt-3 border-t border-border/50">
-                        <span className="text-xs text-muted font-medium">{lab.estimatedTime} mins</span>
-                        <span className="text-xs font-bold text-accent group-hover:underline">Launch Lab &rarr;</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
             </section>
           );
         })}

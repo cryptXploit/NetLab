@@ -1,4 +1,4 @@
-package com.cryptxploit.netlab;
+package com.smartinnovations.netlab;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -59,4 +59,4 @@ npm run build
 - **Type Strictness:** The domain models (`Lab.ts`, `Device.ts`, `Packet.ts`) must remain completely isolated from React/DOM constraints.
 
 ## License
-Proprietary software. All rights reserved by `cryptXploit`.
+Proprietary software. All rights reserved by `smartInnovations`.

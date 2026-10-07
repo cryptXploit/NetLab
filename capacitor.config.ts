@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.cryptxploit.netlab',
+  appId: 'com.smartinnovations.netlab',
   appName: 'NETLAB',
   webDir: 'dist',
   plugins: {
